@@ -1,1 +1,1 @@
-# bookshelf-permission-based-serialization
+# bookshelf-advanced-serialization
