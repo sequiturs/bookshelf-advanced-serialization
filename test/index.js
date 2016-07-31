@@ -60,7 +60,7 @@ describe('Model', function() {
       it('should invoke evaluator with tableName, _accessedAsRelationChain, and model id as default arguments', function() {
 
       });
-      it('should allow customizing the arguments passed to the evaluator via an optional method', function() {
+      it('should support customizing the arguments passed to the evaluator via an optional method', function() {
 
       });
       it('should return a promise so that evaluator methods may do async work if they want to', function() {
@@ -140,6 +140,12 @@ describe('Model', function() {
     it('should remove undefined and empty objects from arrays', function() {
       // TODO Is this necessary? We already do this to the result of toJSON.
     });
+    it('should respect shallow: true option', function() {
+
+    });
+    it('should respect omitPivot: true option', function() {
+
+    });
   });
   describe('related', function() {
     it('should transfer the accessor on the model to the relation loaded via .related()', function() {
@@ -157,5 +163,7 @@ describe('Collection', function() {
 
     });
   });
-  it('should successfully serialize a collection')
+  it('should successfully serialize a collection', function() {
+
+  });
 });
