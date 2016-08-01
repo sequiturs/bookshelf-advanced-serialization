@@ -1,5 +1,11 @@
 'use strict';
 
+describe('Plugin', function() {
+  it('should reject a custom getEvaluatorArguments method that is not a function', function() {
+
+  });
+});
+
 describe('Model', function() {
   describe('accessor', function() {
     it('should default to setting a null accessor', function() {
@@ -51,9 +57,6 @@ describe('Model', function() {
 
     });
     describe('evaluator', function() {
-      it('should allow a falsy evaluator if contextSpecificVisibleFields and ensureRelationsLoaded are falsy', function() {
-
-      });
       it('should require a truthy evaluator to be a function', function() {
 
       });
@@ -64,6 +67,9 @@ describe('Model', function() {
 
       });
       it('should return a promise so that evaluator methods may do async work if they want to', function() {
+
+      });
+      it('should support providing a custom function for generating the arguments passed to the evaluator function', function() {
 
       });
     });
@@ -100,16 +106,19 @@ describe('Model', function() {
       it('should allow contextSpecificVisibleFields to be falsy', function() {
 
       });
-      it('should require a truthy evaluator if contextSpecificVisibleFields is truthy', function() {
-
-      });
       it('should require truthy contextSpecificVisibleFields to be an object', function() {
 
       });
       it('should handle as normally a table name that is not present in contextSpecificVisibleFields', function() {
 
       });
-      it('should require contextSpecificVisibleFields[tableName] to be an object', function() {
+      it('should support contextSpecificVisibleFields[tableName] being an array', function() {
+
+      });
+      it('should require an evaluator function if contextSpecificVisibleFields[tableName] is an object', function() {
+
+      });
+      it('should support contextSpecificVisibleFields[tableName] being an object and use the designation returned by the evaluator function', function() {
 
       });
       it('should require contextSpecificVisibleFields[tableName][designation] to be an array', function() {
