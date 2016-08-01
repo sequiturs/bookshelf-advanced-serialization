@@ -24,7 +24,7 @@ var Group = bookshelf.Model.extend({
 
       var adminsCollectionPromise = relationPromise(this, 'admins');
       return adminsCollectionPromise.then(function(adminsCollection) {
-        var isAdmin = _.find(adminsCollection.models, function(admin) {
+        var isAdmin = !!adminsCollection.find(function(admin) {
           return accessorId === admin.id;
         });
         if (isAdmin) {
@@ -33,7 +33,7 @@ var Group = bookshelf.Model.extend({
 
           var membersCollectionPromise = relationPromise(this, 'members');
           return membersCollectionPromise.then(function(membersCollection) {
-            var isMember = _.find(membersCollection.models, function(member) {
+            var isMember = !!membersCollection.find(function(member) {
               return accessorId === member.id;
             });
             if (isMember) {
