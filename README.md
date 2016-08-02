@@ -1,4 +1,4 @@
-# bookshelf-advanced-serialization [![Build Status](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization.svg?branch=master)](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization) [![npm version](https://img.shields.io/npm/v/bookshelf-advanced-serialization.svg?style=flat)](https://www.npmjs.com/package/bookshelf-advanced-serialization)
+# bookshelf-advanced-serialization [![Build Status](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization.svg?branch=master)](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization) [![Coverage Status](https://coveralls.io/repos/github/sequiturs/bookshelf-advanced-serialization/badge.svg?branch=master)](https://coveralls.io/github/sequiturs/bookshelf-advanced-serialization?branch=master) [![npm version](https://img.shields.io/npm/v/bookshelf-advanced-serialization.svg?style=flat)](https://www.npmjs.com/package/bookshelf-advanced-serialization)
 
 ## Description
 
