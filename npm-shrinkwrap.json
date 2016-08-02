@@ -1,7 +1,12 @@
 {
-  "name": "bookshelf-permission-based-serialization",
+  "name": "bookshelf-advanced-serialization",
   "version": "0.0.0",
   "dependencies": {
+    "bluebird": {
+      "version": "3.4.1",
+      "from": "bluebird@*",
+      "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.4.1.tgz"
+    },
     "bookshelf": {
       "version": "0.9.4",
       "from": "bookshelf@0.9.4",
