@@ -6,12 +6,41 @@ var plugin = require('../lib/index.js');
 var SanityError = require('../lib/errors.js').BookshelfAdvancedSerializationPluginSanityError;
 
 describe('Plugin', function() {
-  it('should reject passing a custom getEvaluatorArguments that is not a function', function() {
-    expect(function() {
-      plugin('foo');
-    }).to.throwException(function (e) {
-      expect(e).to.be.a(SanityError);
-      expect(e.message).to.equal('Custom getEvaluatorArguments passed to plugin must be a function.');
+  describe('options', function() {
+    it('should accept not passing an options argument', function() {
+
+    });
+    it('should accept an options argument that is an object', function() {
+
+    });
+    it('should reject a truthy options argument that is not an object', function() {
+
+    });
+    describe('options.getEvaluatorArguments', function() {
+      it('should accept passing a function', function() {
+
+      });
+      it('should reject passing something truthy that is not a function', function() {
+        expect(function() {
+          plugin({ getEvaluatorArguments: 'foo' });
+        }).to.throwException(function (e) {
+          expect(e).to.be.a(SanityError);
+          expect(e.message).to.equal('options.getEvaluatorArguments passed to plugin must be a function.');
+        });
+      });
+    });
+    describe('options.handleEnsureRelation', function() {
+      it('should accept passing a function', function() {
+
+      });
+      it('should reject passing something truthy that is not a function', function() {
+        expect(function() {
+          plugin({ handleEnsureRelation: 'foo' });
+        }).to.throwException(function (e) {
+          expect(e).to.be.a(SanityError);
+          expect(e.message).to.equal('options.handleEnsureRelation passed to plugin must be a function.');
+        });
+      });
     });
   });
 });
@@ -71,9 +100,6 @@ describe('Model', function() {
 
       });
       it('should invoke evaluator with tableName, _accessedAsRelationChain, and model id as default arguments', function() {
-
-      });
-      it('should support customizing the arguments passed to the evaluator via an optional method', function() {
 
       });
       it('should return a promise so that evaluator methods may do async work if they want to', function() {

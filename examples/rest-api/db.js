@@ -15,6 +15,8 @@ var genCustomEvaluatorArguments = function() {
   }
 };
 
-bookshelf.plugin(advancedSerialization(genCustomEvaluatorArguments));
+bookshelf.plugin(advancedSerialization({
+  getEvaluatorArguments: genCustomEvaluatorArguments
+}));
 
 module.exports = bookshelf;
