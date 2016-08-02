@@ -1,8 +1,18 @@
 'use strict';
 
-describe('Plugin', function() {
-  it('should reject a custom getEvaluatorArguments method that is not a function', function() {
+var expect = require('expect.js');
 
+var plugin = require('../lib/index.js');
+var SanityError = require('../lib/errors.js').BookshelfAdvancedSerializationPluginSanityError;
+
+describe('Plugin', function() {
+  it('should reject passing a custom getEvaluatorArguments that is not a function', function() {
+    expect(function() {
+      plugin('foo');
+    }).to.throwException(function (e) {
+      expect(e).to.be.a(SanityError);
+      expect(e.message).to.equal('Custom getEvaluatorArguments passed to plugin must be a function.');
+    });
   });
 });
 
