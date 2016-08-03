@@ -164,7 +164,13 @@ describe('Model', function() {
 
       });
       it('should respect a `false` value of ensureRelationsVisibleAndInvisible when ensuring relations loaded', function() {
-        // TODO Expect warning about loading unnecessary relations
+
+      });
+      it('should log about loading unnecessary relations if not in production env, when options.ensureRelationsVisibleAndInvisible is true', function() {
+
+      });
+      it('should log about loading unnecessary relations if not in production env, when options.ensureRelationsVisibleAndInvisible is false', function() {
+
       });
     });
     describe('contextSpecificVisibleFields', function() {
