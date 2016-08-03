@@ -17,6 +17,9 @@ describe('Plugin', function() {
 
     });
     describe('options.getEvaluatorArguments', function() {
+      it('should accept not passing the option', function() {
+
+      });
       it('should accept passing a function', function() {
 
       });
@@ -30,6 +33,9 @@ describe('Plugin', function() {
       });
     });
     describe('options.handleEnsureRelation', function() {
+      it('should accept not passing the option', function() {
+
+      });
       it('should accept passing a function', function() {
 
       });
@@ -40,6 +46,23 @@ describe('Plugin', function() {
           expect(e).to.be.a(SanityError);
           expect(e.message).to.equal('options.handleEnsureRelation passed to plugin must be a function.');
         });
+      });
+    });
+    describe('options.ensureRelationsVisibleAndInvisible', function() {
+      it('should accept not passing the option', function() {
+
+      });
+      it('should accept passing `true`', function() {
+
+      });
+      it('should accept passing `false`', function() {
+
+      });
+      it('should cast something truthy to `true`', function() {
+
+      });
+      it('should cast something falsy to `false`', function() {
+
       });
     });
   });
@@ -136,6 +159,12 @@ describe('Model', function() {
       });
       it('should support custom handling of relation names to be loaded', function() {
 
+      });
+      it('should respect a `true` value of ensureRelationsVisibleAndInvisible when ensuring relations loaded', function() {
+
+      });
+      it('should respect a `false` value of ensureRelationsVisibleAndInvisible when ensuring relations loaded', function() {
+        // TODO Expect warning about loading unnecessary relations
       });
     });
     describe('contextSpecificVisibleFields', function() {
