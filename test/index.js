@@ -28,7 +28,7 @@ describe('Plugin', function() {
           plugin({ getEvaluatorArguments: 'foo' });
         }).to.throwException(function (e) {
           expect(e).to.be.a(SanityError);
-          expect(e.message).to.equal('options.getEvaluatorArguments passed to plugin must be a function.');
+          expect(e.message).to.equal('Truthy getEvaluatorArguments passed as plugin option must be a function.');
         });
       });
     });
@@ -44,7 +44,7 @@ describe('Plugin', function() {
           plugin({ handleEnsureRelation: 'foo' });
         }).to.throwException(function (e) {
           expect(e).to.be.a(SanityError);
-          expect(e.message).to.equal('options.handleEnsureRelation passed to plugin must be a function.');
+          expect(e.message).to.equal('Truthy handleEnsureRelation passed as plugin option must be a function.');
         });
       });
     });
