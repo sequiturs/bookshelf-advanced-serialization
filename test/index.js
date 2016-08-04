@@ -118,6 +118,9 @@ describe('Model', function() {
     it('should resolve a model with no visible fields as undefined', function() {
 
     });
+    it('should remove undefineds from a relation that is an array', function() {
+
+    });
     describe('evaluator', function() {
       it('should require a truthy evaluator to be a function', function() {
 
@@ -132,7 +135,7 @@ describe('Model', function() {
 
       });
     });
-    it('should handle Bookshelf bug that can cause a model to be completely empty', function() {
+    it('should convert empty object to null, to handle Bookshelf bug that can cause a model to be completely empty', function() {
       // Cf. https://github.com/tgriesser/bookshelf/issues/753
     });
     describe('ensureRelationsLoaded', function() {
@@ -240,6 +243,9 @@ describe('Model', function() {
 describe('Collection', function() {
   describe('serialize', function() {
     it('should wait for all promises in the collection to resolve', function() {
+
+    });
+    it('should remove undefineds from a serialized collection', function() {
 
     });
   });
