@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-bookshelf-advanced-serialization.Model.html">Model</a><ul class='methods'><li data-type='method'><a href="module-bookshelf-advanced-serialization.Model.html#roleDeterminer">roleDeterminer</a></li><li data-type='method'><a href="module-bookshelf-advanced-serialization.Model.html#setAccessor">setAccessor</a></li><li data-type='method'><a href="module-bookshelf-advanced-serialization.Model.html#toJSON">toJSON</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-bookshelf-advanced-serialization.html">bookshelf-advanced-serialization</a></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>bookshelf-advanced-serialization</h1><p><a href="https://travis-ci.org/sequiturs/bookshelf-advanced-serialization"><img src="https://travis-ci.org/sequiturs/bookshelf-advanced-serialization.svg?branch=master" alt="Build Status"></a> <a href="https://coveralls.io/github/sequiturs/bookshelf-advanced-serialization?branch=master"><img src="https://coveralls.io/repos/github/sequiturs/bookshelf-advanced-serialization/badge.svg?branch=master" alt="Coverage Status"></a> <a href="https://www.npmjs.com/package/bookshelf-advanced-serialization"><img src="https://img.shields.io/npm/v/bookshelf-advanced-serialization.svg?style=flat" alt="npm version"></a></p>
+<h2>Description</h2><p>This module is a plugin for <a href="https://github.com/tgriesser/bookshelf">Bookshelf.js</a>, supporting three types of custom serialization behavior:</p>
+<ol>
+<li>serializing according to <strong>access permissions</strong>,</li>
+<li>serializing according to the <strong>application context</strong> in which serialization is performed, and</li>
+<li>serializing <strong>after loading relations</strong> that should be on the model / collection.</li>
+</ol>
+<p>Together, these features ensure that one call to <code>toJSON</code> can yield an arbitrarily complex serialization result: any combination of a model's properties (i.e. in Bookshelf terminology, attributes and relations), the properties of its relations, and so on indefinitely. In other words, this module supports <strong>recursive serialization</strong> (and it does so in a way that allows infinite looping / cycling to be easily prevented if that would otherwise be a danger). This means the module excels at supporting <strong>hierarchical data models</strong>.</p>
+<h2>Philosophy</h2><p>This module was designed to support serializing models which represent the resources of the <a href="https://sequiturs.com">Sequiturs</a> REST API. It is thus well-suited to the use case of using Bookshelf to power a REST API.</p>
+<p>One important aspect of the REST API use case is customizing the serialization result according to the access permissions of the client. It is crucial that no data be leaked to a client who should not see it. For this reason, this module exclusively implements a <strong>whitelisting</strong> approach to serialization, and does not support blacklisting. Only properties that have been explicitly allowed to be serialized--whitelisted--will be returned by <code>toJSON</code>. This makes leaking data more difficult. This is good.</p>
+<p>This <strong>strict approach to data security</strong> is reflected in another aspect of implementation: the module assumes that when a model has no visible properties, the serialized result should not even indicate to the client that the model exists! In practice, this means that:</p>
+<ol>
+<li>models with no visible properties are serialized to <code>undefined</code> rather than <code>{}</code>, and</li>
+<li>these <code>undefined</code> values are removed from arrays.</li>
+</ol>
+<p>This is useful in the following situation, for instance: suppose there is a collection that contains public items, which the client should be able to see, and private items, which the client should not be able to see. The current implementation ensures that the client will not receive any indication how many private items exist or in what order they appear in the collection. In future, this behavior could be made optional, if that is desired.</p>
+<h2>How to use</h2><h3>Overview</h3><p>The serialization result returned by <code>toJSON</code> is determined by:</p>
+<ol>
+<li><p>evaluating the access permissions of the recipient to determine the maximum extent of the recipient's visibility into a model,</p>
+<ul>
+<li><p>This is accomplished using three parts:</p>
+<ul>
+<li>an <code>accessor</code> value set on a model instance,</li>
+<li>a <code>roleDeterminer</code> method set on the model class, and</li>
+<li>a <code>rolesToVisibleFields</code> object set on the model class.</li>
+</ul>
+</li>
+<li><p><code>accessor</code> represents who is accessing the model; this is the recipient of the serialization result. <code>roleDeterminer</code> is a function for determining the role of the <code>accessor</code> in relation to the model instance. When you call <code>toJSON</code>, <code>roleDeterminer</code> is invoked, with the <code>accessor</code> passed as an argument. <code>rolesToVisibleFields</code> is an object that maps a role to a list of properties that should be visible to someone with that role.</p>
+</li>
+</ul>
+</li>
+<li><p>optionally specifying the subset of these role-determined visible properties that should be in the serialization result given the application context in which serialization is being performed,</p>
+<ul>
+<li><p>This is accomplished using two parts:</p>
+<ul>
+<li>a <code>contextSpecificVisibleFields</code> object provided on the <code>options</code> object passed to <code>toJSON</code></li>
+<li>an optional <code>evaluator</code> function also provided on the <code>options</code> object</li>
+</ul>
+</li>
+<li><p><code>contextSpecificVisibleFields</code> indexes lists of the properties of a model that should be visible in light of the application context. These lists are indexed first by models' <code>tableName</code>, which allows for easily specifying context-specific visible properties for all models of a certain type. (We use <code>tableName</code> because this is the only identifier Bookshelf provides for identifying a model's type.) If you want fine-grained control over designating context beyond simply by model type, you can provide an <code>evaluator</code> function, which is invoked when you call <code>toJSON</code>, and which by default is passed the model's <code>tableName</code>, <a href="#_accessedAsRelationChain"><code>_accessedAsRelationChain</code></a>, and <code>id</code> properties as arguments. (You can override this default behavior and pass custom arguments to <code>evaluator</code>, by passing your own <code>getEvaluatorArguments</code> function when registering this plugin.) The designation returned by <code>evaluator</code> will be used to lookup the list of context-specific visible properties, inside <code>contextSpecificVisibleFields[tableName]</code>.</p>
+</li>
+</ul>
+</li>
+<li><p>optionally loading specified relations on the model (or on the model's relations, recursively to any depth) before serializing, if those relations are not already loaded.</p>
+<ul>
+<li><p>This is accomplished using two parts:</p>
+<ul>
+<li>an <code>ensureRelationsLoaded</code> object provided on the <code>options</code> object passed to <code>toJSON</code></li>
+<li>an optional <code>evaluator</code> function also provided on the <code>options</code> object. This is the same <code>evaluator</code> as in 2.</li>
+</ul>
+</li>
+<li><p><code>ensureRelationsLoaded</code> works analogously to <code>contextSpecificVisibleFields</code>, except the lists contain the names of relations that it will be ensured are loaded on the model prior to serialization, rather than context-specific visible properties.</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3>Installation</h3><pre class="prettyprint source lang-JavaScript"><code>npm install bookshelf-advanced-serialization</code></pre><p>then</p>
+<pre class="prettyprint source lang-JavaScript"><code>'use strict';
+
+var advancedSerialization = require('bookshelf-advanced-serialization');
+
+var knex = require('knex')({ ... });
+var bookshelf = require('bookshelf')(knex);
+
+bookshelf.plugin(advancedSerialization());
+
+module.exports = bookshelf;</code></pre><h3>API</h3><p>See <a href="TODO"><code>docs/index.html</code></a>.</p>
+<h3>Examples</h3><p>See <a href="https://github.com/sequiturs/bookshelf-advanced-serialization/tree/master/examples/rest-api"><code>examples/rest-api</code></a>.</p>
+<p>Within <a href="https://github.com/sequiturs/bookshelf-advanced-serialization/blob/master/examples/rest-api/server.js"><code>examples/rest-api/server.js</code></a>, there are examples of the different ways you can use this module to control serialization behavior:</p>
+<ul>
+<li>Using access permissions but not application context<ul>
+<li>See route handling for <code>/users/:username</code>.</li>
+</ul>
+</li>
+<li>Using access permissions and application context<ul>
+<li>using <code>evaluator</code>'s context designations with <code>contextSpecificVisibleFields</code><ul>
+<li>See route handling for <code>/comments/:id</code>.</li>
+</ul>
+</li>
+<li>using only table names, not <code>evaluator</code>'s context designations, with <code>contextSpecificVisibleFields</code><ul>
+<li>See route handling for <code>/comments/:id</code>, specifically the <code>users</code> table name.</li>
+</ul>
+</li>
+<li>using custom arguments in the <code>evaluator</code> function<ul>
+<li>See route handling for <code>/comments/:id</code>.</li>
+</ul>
+</li>
+<li>using the default <code>relationChain</code> argument to <code>evaluator</code><ul>
+<li>TODO</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>After ensuring certain relations have been loaded<ul>
+<li>using <code>evaluator</code>'s context designations with <code>ensureRelationsLoaded</code><ul>
+<li>See route handling for <code>/comments/:id</code>.</li>
+</ul>
+</li>
+<li>using only table names, not <code>evaluator</code>'s context designations, with <code>ensureRelationsLoaded</code><ul>
+<li>See route handling for <code>/users/:username</code>.</li>
+</ul>
+</li>
+<li>using custom arguments in the <code>evaluator</code> function<ul>
+<li>See route handling for <code>/comments/:id</code>.</li>
+</ul>
+</li>
+<li>using the default <code>relationChain</code> argument to <code>evaluator</code><ul>
+<li>TODO</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2>License</h2><p>See <a href="https://github.com/sequiturs/bookshelf-advanced-serialization/blob/master/LICENSE.md"><code>LICENSE.md</code></a>.</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Aug 05 2016 09:51:05 GMT-0400 (EDT) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
