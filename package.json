@@ -32,7 +32,7 @@
     "expect.js": "^0.3.1",
     "istanbul": "^0.4.4",
     "jsdoc": "^3.4.0",
-    "minami": "^1.1.1",
+    "minami": "git://github.com/sequiturs/minami.git#master",
     "mocha": "^2.5.3",
     "mocha-lcov-reporter": "^1.2.0"
   }

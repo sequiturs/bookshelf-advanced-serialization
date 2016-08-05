@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
+@import url(https://fonts.googleapis.com/css?family=Montserrat:400,700);
 
 * {
   box-sizing: border-box
@@ -586,5 +586,16 @@ dl.param-type {
 
   footer {
     margin-left: 0;
+  }
+}
+
+@media only print {
+  nav {
+    display: none;
+  }
+
+  #main {
+    float: none;
+    width: 100%;
   }
 }
