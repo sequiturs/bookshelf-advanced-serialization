@@ -1,0 +1,28 @@
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "include": ["README.md", "lib"],
+    "includePattern": ".+\\.js(doc)?$"
+  },
+  "plugins": [
+    "node_modules/jsdoc/plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": false,
+    "default": {
+      "outputSourceFiles": true,
+      "showInheritedFrom": false
+    }
+  },
+  "opts": {
+    "template": "node_modules/minami",
+    "changelog": "./CHANGELOG.md",
+    "destination": "./docs",
+    "recurse": true,
+    "private": true,
+    "encoding": "utf-8"
+  }
+}

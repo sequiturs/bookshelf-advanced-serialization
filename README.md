@@ -1,4 +1,5 @@
-# bookshelf-advanced-serialization [![Build Status](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization.svg?branch=master)](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization) [![Coverage Status](https://coveralls.io/repos/github/sequiturs/bookshelf-advanced-serialization/badge.svg?branch=master)](https://coveralls.io/github/sequiturs/bookshelf-advanced-serialization?branch=master) [![npm version](https://img.shields.io/npm/v/bookshelf-advanced-serialization.svg?style=flat)](https://www.npmjs.com/package/bookshelf-advanced-serialization)
+# bookshelf-advanced-serialization
+[![Build Status](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization.svg?branch=master)](https://travis-ci.org/sequiturs/bookshelf-advanced-serialization) [![Coverage Status](https://coveralls.io/repos/github/sequiturs/bookshelf-advanced-serialization/badge.svg?branch=master)](https://coveralls.io/github/sequiturs/bookshelf-advanced-serialization?branch=master) [![npm version](https://img.shields.io/npm/v/bookshelf-advanced-serialization.svg?style=flat)](https://www.npmjs.com/package/bookshelf-advanced-serialization)
 
 ## Description
 
@@ -77,54 +78,7 @@ module.exports = bookshelf;
 
 ### API
 
-#### `Model`
-
-##### `accessor`
-
-TODO
-
-##### <a name="\_accessedAsRelationChain"></a>`_accessedAsRelationChain`
-
-TODO
-
-##### `forge`
-
-TODO
-What about `constructor`?
-
-##### `roleDeterminer(accessor)` - required
-
-TODO
-
-This function may return a promise resolving to the role. This supports asynchronously determining the role.
-
-##### `rolesToVisibleFields` - required
-
-TODO
-
-This should be an object which maps a role to the list of properties that should be visible to someone with that role.
-
-The role's visibleFields represent the list of properties that may possibly be returned; the final result is a subset.
-
-##### `toJSON(options)`
-
-TODO
-
-Note that this method may mutate the model. Specifically, it will add relations according to `ensureRelationsLoaded`, and it will remove relations not present in the model's visible fields.
-
-###### `contextSpecificVisibleFields`
-
-TODO
-
-###### `ensureRelationsLoaded`
-
-TODO
-
-###### `evaluator`
-
-TODO
-
-The evaluator is especially useful for preventing infinite looping in serialization. See [TODO](TODO) for an example.
+See [`docs/index.html`](TODO).
 
 ### Examples
 
