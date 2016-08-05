@@ -15,6 +15,9 @@
     "type": "git",
     "url": "git+https://github.com/sequiturs/bookshelf-advanced-serialization.git"
   },
+  "files": [
+    "lib"
+  ],
   "author": "Ian Hinsdale",
   "license": "MIT",
   "bugs": {
@@ -22,9 +25,9 @@
   },
   "homepage": "https://github.com/sequiturs/bookshelf-advanced-serialization#readme",
   "dependencies": {
-    "bluebird": "^3.4.1",
+    "bluebird": "3.4.1",
     "bookshelf": "0.9.4",
-    "create-error": "^0.3.1",
+    "create-error": "0.3.1",
     "lodash": "3.10.1"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@
   "dependencies": {
     "bluebird": {
       "version": "3.4.1",
-      "from": "bluebird@*",
+      "from": "bluebird@3.4.1",
       "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.4.1.tgz"
     },
     "bookshelf": {
@@ -80,11 +80,6 @@
             }
           }
         },
-        "create-error": {
-          "version": "0.3.1",
-          "from": "create-error@>=0.3.1 <0.4.0",
-          "resolved": "https://registry.npmjs.org/create-error/-/create-error-0.3.1.tgz"
-        },
         "inflection": {
           "version": "1.10.0",
           "from": "inflection@>=1.5.1 <2.0.0",
@@ -99,7 +94,7 @@
     },
     "create-error": {
       "version": "0.3.1",
-      "from": "create-error@*",
+      "from": "create-error@0.3.1",
       "resolved": "https://registry.npmjs.org/create-error/-/create-error-0.3.1.tgz"
     },
     "knex": {
@@ -349,7 +344,7 @@
           "dependencies": {
             "user-home": {
               "version": "1.1.1",
-              "from": "user-home@>=1.0.0 <2.0.0",
+              "from": "user-home@>=1.1.1 <2.0.0",
               "resolved": "https://registry.npmjs.org/user-home/-/user-home-1.1.1.tgz"
             }
           }
@@ -361,7 +356,7 @@
           "dependencies": {
             "user-home": {
               "version": "1.1.1",
-              "from": "user-home@>=1.0.0 <2.0.0",
+              "from": "user-home@>=1.1.1 <2.0.0",
               "resolved": "https://registry.npmjs.org/user-home/-/user-home-1.1.1.tgz"
             }
           }

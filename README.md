@@ -78,7 +78,9 @@ module.exports = bookshelf;
 
 ### API
 
-See [`docs/index.html`](TODO).
+See [docs site](https://sequiturs.github.io/bookshelf-advanced-serialization/module-bookshelf-advanced-serialization.html).
+
+If you have cloned the repo, you can view the docs locally by opening `docs/index.html` in your browser.
 
 ### Examples
 
@@ -109,4 +111,4 @@ Within [`examples/rest-api/server.js`](https://github.com/sequiturs/bookshelf-ad
 
 ## License
 
-See [`LICENSE.md`](https://github.com/sequiturs/bookshelf-advanced-serialization/blob/master/LICENSE.md).
+See [`LICENSE`](https://github.com/sequiturs/bookshelf-advanced-serialization/blob/master/LICENSE).
