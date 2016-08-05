@@ -19,7 +19,6 @@
   },
   "opts": {
     "template": "node_modules/minami",
-    "changelog": "./CHANGELOG.md",
     "destination": "./docs",
     "recurse": true,
     "private": true,
