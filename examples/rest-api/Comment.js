@@ -1,28 +1,34 @@
 'use strict';
 
-var bookshelf = require('./db.js');
+module.exports = function(bookshelf) {
+  var Comment = bookshelf.Model.extend({
+    tableName: 'comments',
 
-require('./User.js');
+    roleDeterminer: function(accessor) {
+      return 'anyone';
+    },
+    rolesToVisibleFields: {
+      anyone: [ 'id', 'author', 'content', 'parent', 'children' ]
+    },
 
-var Comment = bookshelf.Model.extend({
-  tableName: 'comments',
+    parent: function() {
+      return this.belongsTo('Comment', 'parent_id');
+    },
+    children: function() {
+      return this.hasMany('Comment', 'parent_id');
+    },
+    author: function() {
+      return this.belongsTo('User', 'author_id');
+    }
+  }, {});
 
-  roleDeterminer: function(accessor) {
-    return 'anyone';
-  },
-  rolesToVisibleFields: {
-    anyone: [ 'id', 'author', 'content', 'parent', 'children' ]
-  },
+  // Register model
+  bookshelf.model('Comment', Comment);
 
-  parent: function() {
-    return this.belongsTo('Argument', 'parent_id');
-  },
-  children: function() {
-    return this.hasMany('Argument', 'parent_id');
-  },
-  author: function() {
-    return this.belongsTo('User', 'author_id');
+  // Register model(s) depended on
+  if (!bookshelf.model('User')) {
+    require('./User.js')(bookshelf);
   }
-}, {});
 
-module.exports = bookshelf.model('Comment', Comment);
+  return bookshelf.model('Comment');
+};

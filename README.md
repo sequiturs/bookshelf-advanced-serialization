@@ -11,6 +11,8 @@ This module is a plugin for [Bookshelf.js](https://github.com/tgriesser/bookshel
 
 Together, these features ensure that one call to `toJSON` can yield an arbitrarily complex serialization result: any combination of a model's properties (i.e. in Bookshelf terminology, attributes and relations), the properties of its relations, and so on indefinitely. In other words, this module supports **recursive serialization** (and it does so in a way that allows infinite looping / cycling to be easily prevented if that would otherwise be a danger). This means the module excels at supporting **hierarchical data models**.
 
+You can explore the source code on [GitHub](https://github.com/sequiturs/bookshelf-advanced-serialization). This module has a **comprehensive test suite**.
+
 ## Philosophy
 
 This module was designed to support serializing models which represent the resources of the [Sequiturs](https://sequiturs.com) REST API. It is thus well-suited to the use case of using Bookshelf to power a REST API.

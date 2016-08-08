@@ -4,9 +4,9 @@ var express = require('express');
 
 var bookshelf = require('./db.js');
 
-require('./User.js');
-require('./Group.js');
-require('./Comment.js');
+require('./User.js')(bookshelf);
+require('./Group.js')(bookshelf);
+require('./Comment.js')(bookshelf);
 
 var app = express();
 
@@ -87,6 +87,7 @@ app.get('/comments/:id', function(req, res) {
  *   id: '3d33e941-e23e-41fa-8807-03e87ce7baa8'
  *   username: 'antelope99'
  *   created_at: '2016-02-03T04:07:51.690Z',
+ *   email: 'antelope99@example.com',
  *   groupsMemberOf: [
  *     {
  *       id: '0f91fab2-48b5-4396-9b75-632f99da02c2',

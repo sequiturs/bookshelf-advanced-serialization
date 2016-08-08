@@ -37,6 +37,7 @@
     "jsdoc": "^3.4.0",
     "minami": "git://github.com/sequiturs/minami.git#master",
     "mocha": "^2.5.3",
-    "mocha-lcov-reporter": "^1.2.0"
+    "mocha-lcov-reporter": "^1.2.0",
+    "mock-knex": "^0.3.2"
   }
 }
