@@ -27,7 +27,9 @@ module.exports = function(bookshelf) {
   }, {});
 
   // Register model
-  bookshelf.model('User', User);
+  if (!bookshelf.model('User')) {
+    bookshelf.model('User', User);
+  }
 
   // Register model(s) depended on
   if (!bookshelf.model('Group')) {

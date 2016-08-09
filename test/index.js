@@ -80,6 +80,9 @@ describe('Plugin', function() {
         expect(function() {
           plugin({});
         }).to.not.throwException();
+
+        // Default behavior of `false` is tested below in Model > toJSON >
+        // options > ensureRelationsLoaded.
       });
       it('should accept passing `true`', function() {
         expect(function() {
@@ -119,6 +122,23 @@ describe('Model', function() {
       function() {
         query.response([
           _.extend({}, stubs.groups.slouchyGauchos, {
+            _pivot_user_id: stubs.users.elephant1.id,
+            _pivot_group_id: stubs.groups.slouchyGauchos.id
+          })
+        ]);
+      }
+    ];
+  };
+  var determineRoleElephant1SlouchyGauchos = function(query) {
+    return [
+      // Role determiner evaluation of admins
+      function() {
+        query.response([]);
+      },
+      // Role determiner evaluation of members
+      function() {
+        query.response([
+          _.extend({}, stubs.users.elephant1, {
             _pivot_user_id: stubs.users.elephant1.id,
             _pivot_group_id: stubs.groups.slouchyGauchos.id
           })
@@ -305,49 +325,398 @@ describe('Model', function() {
     });
     describe('options', function() {
       describe('evaluator', function() {
-        it('should require a truthy evaluator to be a function', function() {
-
+        it('should require a truthy evaluator to be a function', function(done) {
+          User.forge({ username: 'foo' }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            evaluator: 'fizz'
+          }).catch(function(e) {
+            expect(e).to.be.a(SanityError);
+            expect(e.message).to.equal('evaluator must be a function');
+            done();
+          });
         });
-        it('should invoke evaluator with tableName, _accessedAsRelationChain, and model id as default arguments', function() {
-
+        it('should invoke evaluator with tableName, _accessedAsRelationChain, and model id as default arguments', function(done) {
+          User.forge({ id: 1, username: 'foo' }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            evaluator: function(tableName, relationChain, id) {
+              expect(tableName).to.equal('users');
+              expect(relationChain).to.eql([]);
+              expect(id).to.equal(1);
+              done();
+            }
+          });
         });
-        it('should return a promise so that evaluator methods may do async work if they want to', function() {
+        it('the return result of evaluator methods should be wrapped in a promise, so evaluator can do async work if it wants to', function(done) {
+          User.forge({ id: 1, username: 'foo' }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            evaluator: function(tableName, relationChain, id) {
+              return 'fizz';
+            },
+            contextSpecificVisibleFields: {
+              users: {
+                fizz: [ 'username' ]
+              }
+            }
+          }).then(function(result) {
+            expect(result).to.eql({ username: 'foo' });
 
+            User.forge({ id: 1, username: 'foo' }, {
+              accessor: { user: 'bar' }
+            }).toJSON({
+              evaluator: function(tableName, relationChain, id) {
+                return BluebirdPromise.resolve('fizz');
+              },
+              contextSpecificVisibleFields: {
+                users: {
+                  fizz: [ 'username' ]
+                }
+              }
+            }).then(function(result) {
+              expect(result).to.eql({ username: 'foo' });
+
+              done();
+            });
+          });
         });
-        it('should support providing a custom function for generating the arguments passed to the evaluator function', function() {
+        it('should support providing a custom function for generating the arguments passed to the evaluator function', function(done) {
+          var anotherBookshelf = require('bookshelf')(knex);
+          anotherBookshelf.plugin('registry');
+          anotherBookshelf.plugin(plugin({
+            getEvaluatorArguments: function() {
+              return [ this.tableName, this.get('albumName') ];
+            }
+          }));
 
+          anotherBookshelf.Model.extend({
+            tableName: 'tunes',
+            roleDeterminer: function() { return 'anyone'; },
+            rolesToVisibleFields: {
+              anyone: [ 'id' ]
+            }
+          }).forge({
+            id: 1,
+            name: 'As I went out one morning',
+            albumName: 'John Wesley Harding'
+          }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            evaluator: function(tableName, albumName) {
+              expect(tableName).to.equal('tunes');
+              expect(albumName).to.equal('John Wesley Harding');
+              done();
+            }
+          });
         });
       });
       describe('ensureRelationsLoaded', function() {
-        it('should allow ensureRelationsLoaded to be falsy', function() {
-
+        var tracker = mockKnex.getTracker();
+        beforeEach(function(done) {
+          tracker.install();
+          tracker.on('query', function sendResult(query, step) {
+            fetchElephant1LoadGroupsMemberOf(query)
+              .concat(determineRoleElephant1SlouchyGauchos(query))[step - 1]()
+          });
+          done();
         });
-        it('should require truthy ensureRelationsLoaded to be an object', function() {
-
+        afterEach(function(done) {
+          tracker.uninstall();
+          done();
         });
-        it('should handle as normally a table name that is not present in ensureRelationsLoaded', function() {
-
+        it('should allow ensureRelationsLoaded to be falsy', function(done) {
+          User.forge({ username: 'foo' }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            ensureRelationsLoaded: null
+          }).then(function(result) {
+            done();
+          });
         });
-        it('should support ensureRelationsLoaded[tableName] being an array', function() {
-
+        it('should require truthy ensureRelationsLoaded to be an object', function(done) {
+          User.forge({ username: 'foo' }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            ensureRelationsLoaded: 'fizz'
+          }).catch(function(e) {
+            expect(e).to.be.a(SanityError);
+            expect(e.message).to.equal('ensureRelationsLoaded must be an object');
+            done();
+          });
         });
-        it('should require an evaluator function if ensureRelationsLoaded[tableName] is an object', function() {
-
+        it('should handle as normally a table name that is not present in ensureRelationsLoaded', function(done) {
+          User.forge({ username: 'foo' }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            ensureRelationsLoaded: {
+              comments: [ 'author' ]
+            }
+          }).then(function(result) {
+            expect(result).to.eql({ username: 'foo' });
+            done();
+          });
         });
-        it('should support ensureRelationsLoaded[tableName] being an object and use the designation returned by the evaluator function', function() {
+        it('should support ensureRelationsLoaded[tableName] being an array', function(done) {
+          User.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              ensureRelationsLoaded: {
+                users: [ 'groupsMemberOf' ]
+              },
+              contextSpecificVisibleFields: {
+                groups: [ 'name' ]
+              }
+            }).then(function(result) {
+              expect(result).to.eql({
+                id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                username: 'elephant1',
+                email: 'elephant1@example.com',
+                created_at: '2016-01-03T04:07:51.690Z',
+                groupsMemberOf: [{ name: 'Slouchy gauchos' }]
+              });
 
+              done();
+            });
+          });
         });
-        it('should require that ensureRelationsLoaded[tableName][designation] be an array', function() {
+        it('should require an evaluator function if ensureRelationsLoaded[tableName] is an object', function(done) {
+          User.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              ensureRelationsLoaded: {
+                users: { foo: [ 'groupsMemberOf' ] }
+              }
+            }).catch(function(e) {
+              expect(e).to.be.a(SanityError);
+              expect(e.message).to.equal('options must contain an evaluator function if ' +
+                'options.ensureRelationsLoaded[this.tableName] is an object');
 
+              done();
+            });
+          });
         });
-        it('should support custom handling of relation names to be loaded', function() {
+        it('should support ensureRelationsLoaded[tableName] being an object and use the designation returned by the evaluator function', function(done) {
+          User.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              evaluator: function(tableName, relationChain, id) {
+                return 'foo';
+              },
+              ensureRelationsLoaded: {
+                users: { foo: [ 'groupsMemberOf' ] }
+              },
+              contextSpecificVisibleFields: {
+                groups: [ 'name' ]
+              }
+            }).then(function(result) {
+              expect(result).to.eql({
+                id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                username: 'elephant1',
+                email: 'elephant1@example.com',
+                created_at: '2016-01-03T04:07:51.690Z',
+                groupsMemberOf: [{ name: 'Slouchy gauchos' }]
+              });
 
+              done();
+            });
+          });
         });
-        it('should respect a `true` value of ensureRelationsVisibleAndInvisible when ensuring relations loaded', function() {
+        it('should reject ensureRelationsLoaded[tableName] being neither array nor object', function(done) {
+          User.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              evaluator: function(tableName, relationChain, id) {
+                return 'foo';
+              },
+              ensureRelationsLoaded: {
+                users: 'bar'
+              }
+            }).catch(function(e) {
+              expect(e).to.be.a(SanityError);
+              expect(e.message).to.equal('ensureRelationsLoaded.users ' +
+                'must be an array, or an object whose keys are strings returned ' +
+                'by the options.evaluator function and whose values are arrays.');
 
+              done();
+            });
+          });
         });
-        it('should respect a `false` value of ensureRelationsVisibleAndInvisible when ensuring relations loaded', function() {
+        it('should require that ensureRelationsLoaded[tableName][designation] be an array', function(done) {
+          User.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              evaluator: function(tableName, relationChain, id) {
+                return 'foo';
+              },
+              ensureRelationsLoaded: {
+                users: { foo: { groupsMemberOf: true } }
+              }
+            }).catch(function(e) {
+              expect(e).to.be.a(SanityError);
+              expect(e.message).to.equal('evaluator function did not successfully ' +
+                'identify array of relation names to ensure loaded');
 
+              done();
+            });
+          });
+        });
+        it('should support custom handling of relation names to be loaded', function(done) {
+          var anotherBookshelf = require('bookshelf')(knex);
+          anotherBookshelf.plugin('registry');
+          anotherBookshelf.plugin(plugin({
+            handleEnsureRelation: function(relationName) {
+              expect(relationName).to.equal('recordLabel');
+              this.set('artistName', 'Bob Dylan');
+            }
+          }));
+
+          anotherBookshelf.Model.extend({
+            tableName: 'tunes',
+            roleDeterminer: function() { return 'anyone'; },
+            rolesToVisibleFields: {
+              anyone: [ 'id', 'name', 'albumName', 'artistName', 'recordLabel' ]
+            }
+          }).forge({
+            id: 1,
+            name: 'As I went out one morning',
+            albumName: 'John Wesley Harding'
+          }, {
+            accessor: { user: 'bar' }
+          }).toJSON({
+            ensureRelationsLoaded: {
+              tunes: [ 'recordLabel' ]
+            }
+          }).then(function(result) {
+            expect(result).to.eql({
+              id: 1,
+              name: 'As I went out one morning',
+              albumName: 'John Wesley Harding',
+              artistName: 'Bob Dylan',
+              // We don't expect `recordLabel` to be in the result, because our
+              // custom `handleEnsureRelation` doesn't actually load that relation;
+              // instead it sets the `artistName` attribute.
+            });
+
+            done();
+          });
+        });
+        it('should respect a `true` value of ensureRelationsVisibleAndInvisible when ensuring relations loaded', function(done) {
+          var anotherBookshelf = require('bookshelf')(knex);
+          anotherBookshelf.plugin('registry');
+          anotherBookshelf.plugin(plugin({
+            handleEnsureRelation: function(relationName) {
+              expect(relationName).to.equal('groupsMemberOf');
+
+              // Replicate default handleEnsureRelation functionality
+              return this.relations[relationName] ?
+                BluebirdPromise.resolve(this.related(relationName)) :
+                this.load([ relationName ]).then(function(thisLoadedWithRelationName) {
+                  return thisLoadedWithRelationName.related(relationName);
+                })
+            },
+            ensureRelationsVisibleAndInvisible: true
+          }));
+
+          var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
+          AnotherBookshelfUser.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              ensureRelationsLoaded: {
+                users: [ 'groupsMemberOf' ]
+              },
+              contextSpecificVisibleFields: {
+                users: [ 'id', 'username' ]
+              }
+            }).then(function(result) {
+              expect(result).to.eql({
+                id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                username: 'elephant1'
+              });
+              done();
+            });
+          });
+        });
+        it('should respect a `false` value of ensureRelationsVisibleAndInvisible when ensuring relations loaded', function(done) {
+          var anotherBookshelf = require('bookshelf')(knex);
+          anotherBookshelf.plugin('registry');
+          anotherBookshelf.plugin(plugin({
+            handleEnsureRelation: function(relationName) {
+              done(new Error('handleEnsureRelation should not be called'));
+            },
+            ensureRelationsVisibleAndInvisible: false
+          }));
+
+          var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
+          AnotherBookshelfUser.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              ensureRelationsLoaded: {
+                users: [ 'groupsMemberOf' ]
+              },
+              contextSpecificVisibleFields: {
+                users: [ 'id', 'username' ]
+              }
+            }).then(function(result) {
+              expect(result).to.eql({
+                id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                username: 'elephant1'
+              });
+              done();
+            });
+          });
+        });
+        it('should default to behaving as if ensureRelationsVisibleAndInvisible is false when ensuring relations loaded', function(done) {
+          var anotherBookshelf = require('bookshelf')(knex);
+          anotherBookshelf.plugin('registry');
+          anotherBookshelf.plugin(plugin({
+            handleEnsureRelation: function(relationName) {
+              done(new Error('handleEnsureRelation should not be called'));
+            }
+          }));
+
+          var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
+          AnotherBookshelfUser.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.toJSON({
+              ensureRelationsLoaded: {
+                users: [ 'groupsMemberOf' ]
+              },
+              contextSpecificVisibleFields: {
+                users: [ 'id', 'username' ]
+              }
+            }).then(function(result) {
+              expect(result).to.eql({
+                id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                username: 'elephant1'
+              });
+              done();
+            });
+          });
         });
         it('should log about loading unnecessary relations if not in production env, when options.ensureRelationsVisibleAndInvisible is true', function() {
 
@@ -433,25 +802,10 @@ describe('Model', function() {
       var tracker = mockKnex.getTracker();
       tracker.install();
       tracker.on('query', function sendResult(query, step) {
-        var determineRole = [
-          // Role determiner evaluation of admins
-          function() {
-            query.response([]);
-          },
-          // Role determiner evaluation of members
-          function() {
-            query.response([
-              _.extend({}, stubs.users.elephant1, {
-                _pivot_user_id: stubs.users.elephant1.id,
-                _pivot_group_id: stubs.groups.slouchyGauchos.id
-              })
-            ]);
-          }
-        ];
         (
           fetchElephant1LoadGroupsMemberOf(query)
-            .concat(determineRole)
-            .concat(determineRole) // Necessary for the second call of .toJSON(),
+            .concat(determineRoleElephant1SlouchyGauchos(query))
+            .concat(determineRoleElephant1SlouchyGauchos(query)) // Necessary for the second call of .toJSON(),
             // because `admins` and `members` relations were deleted after first
             // call of .toJSON() because they were not visible properties
         )[step - 1]();
@@ -505,22 +859,8 @@ describe('Model', function() {
       var tracker = mockKnex.getTracker();
       tracker.install();
       tracker.on('query', function sendResult(query, step) {
-        var determineRole = [
-          // Role determiner evaluation of admins
-          function() {
-            query.response([]);
-          },
-          // Role determiner evaluation of members
-          function() {
-            query.response([
-              _.extend({}, stubs.users.elephant1, {
-                _pivot_user_id: stubs.users.elephant1.id,
-                _pivot_group_id: stubs.groups.slouchyGauchos.id
-              })
-            ]);
-          }
-        ];
-        fetchElephant1LoadGroupsMemberOf(query).concat(determineRole)[step - 1]();
+        fetchElephant1LoadGroupsMemberOf(query)
+          .concat(determineRoleElephant1SlouchyGauchos(query))[step - 1]();
       });
 
       User.forge({ username: 'elephant1' }, {
@@ -539,11 +879,9 @@ describe('Model', function() {
             expect(result.groupsMemberOf).to.eql([{
               id: '0f91fab2-48b5-4396-9b75-632f99da02c2',
               name: 'Slouchy gauchos'
-            }]); // If relation arrays weren't resolved as a promise of all the
-            // promises in the array, this array would be an array containing a
-            // serialized promise. Because this array contains an actual serialized
-            // model rather than a serialized promise, this test proves the
-            // desired functionality is implemented.
+            }]); // This array would be an array containing a serialized promise,
+            // if relation arrays were not resolved as a promise of all the
+            // promises in the array. QED.
 
             tracker.uninstall();
             done();
@@ -551,7 +889,7 @@ describe('Model', function() {
         });
       });
     });
-    it('should convert a relation property with a value that would otherwise be serialized as an empty object to null', function(done) {
+    it('should serialize a relation that is an empty model as null rather than as an empty object', function(done) {
       // Cf. https://github.com/tgriesser/bookshelf/issues/753
 
       // Create an unplugged-in version of Bookshelf, for comparison
@@ -622,6 +960,61 @@ describe('Model', function() {
         });
       });
     });
+    it('should serialize a standalone empty model as an empty object', function(done) {
+      // Not sure why anyone would ever care about the result of serializing an empty object,
+      // but it's good to document the behavior nonetheless.
+      bookshelf.Model.extend({
+        tableName: 'foo',
+        roleDeterminer: function() { return 'anyone'; },
+        rolesToVisibleFields: { anyone: [ 'bar' ] }
+      }).forge({}, { accessor:
+        { user: { id: stubs.users.elephant1.id } }
+      })
+      .toJSON()
+      .then(function(result) {
+        expect(result).to.eql({});
+        done();
+      });
+    });
+    it('should serialize an empty model that exists in a collection that is a relation as an empty object', function(done) {
+      var tracker = mockKnex.getTracker();
+      tracker.install();
+      tracker.on('query', function sendResult(query, step) {
+        fetchElephant1LoadGroupsMemberOf(query)
+          .concat(determineRoleElephant1SlouchyGauchos(query))[step - 1]();
+      });
+
+      User.forge({ username: 'elephant1' }, {
+        accessor: { user: { id: stubs.users.elephant1.id } }
+      })
+      .fetch()
+      .then(function(user) {
+        user.load('groupsMemberOf').then(function() {
+          var groups = user.related('groupsMemberOf'); // Need to call this because
+          // .related() is what transfers model._accessor to the relation
+          groups.add(User.forge({}, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          }));
+
+          user.toJSON({
+            contextSpecificVisibleFields: {
+              groups: [ 'id', 'name' ]
+            }
+          }).then(function(result) {
+            expect(result.groupsMemberOf).to.eql([
+              {
+                id: '0f91fab2-48b5-4396-9b75-632f99da02c2',
+                name: 'Slouchy gauchos'
+              },
+              {}
+            ]);
+
+            tracker.uninstall();
+            done();
+          });
+        });
+      });
+    });
   });
   describe('related', function() {
     var tracker = mockKnex.getTracker();
@@ -664,17 +1057,103 @@ describe('Model', function() {
 });
 
 describe('Collection', function() {
+  var bookshelf = require('bookshelf')(knex);
+  bookshelf.plugin('registry');
+  bookshelf.plugin(plugin());
+
+  var Comment = require('../examples/rest-api/Comment.js')(bookshelf);
+  var User = require('../examples/rest-api/User.js')(bookshelf);
+
   describe('serialize', function() {
-    it('should wait for all promises in the collection to resolve', function() {
-
+    it('should wait for all promises in the collection to resolve', function(done) {
+      bookshelf.Collection.extend({ model: Comment }).forge([
+        Comment.forge({ content: 'comment1' },
+          { accessor: { user: { id: stubs.users.elephant1.id } } }),
+        Comment.forge({ content: 'comment2' },
+          { accessor: { user: { id: stubs.users.elephant1.id } } }),
+      ])
+      .toJSON()
+      .then(function(result) {
+        expect(result).to.eql([
+          { content: 'comment1' },
+          { content: 'comment2' }
+        ]); // This would be serialized as an array of promises if not all promises
+        // in the collection were waited for. QED.
+        done();
+      });
     });
-    it('should remove undefineds from a serialized collection', function() {
+    it('should remove `undefined`s from a serialized collection', function(done) {
+      bookshelf.Collection.extend({ model: Comment }).forge([
+        Comment.forge({ id: 1, content: 'comment1' },
+          { accessor: { user: { id: stubs.users.elephant1.id } } }),
+        Comment.forge({ id: 2, content: 'comment2' },
+          { accessor: { user: { id: stubs.users.elephant1.id } } }),
+      ])
+      .toJSON({
+        evaluator: function(tableName, relationChain, id) {
+          if (tableName === 'comments') {
+            if (id === 1) {
+              return 'foo';
+            } else if (id === 2) {
+              return 'bar';
+            }
+          }
+        },
+        contextSpecificVisibleFields: {
+          comments: {
+            foo: [ 'id', 'content' ],
+            bar: []
+          }
+        }
+      })
+      .then(function(result) {
+        expect(result).to.eql([
+          { id: 1, content: 'comment1' }
+        ]);
 
+        done();
+      });
     });
   });
   describe('toJSON', function() {
-    it('should return a promise of a serialization result', function() {
+    it('should return a promise of a serialization result', function(done) {
+      var serializationResultPromise = bookshelf.Collection.extend({ model: Comment }).forge([
+        User.forge({ username: 'foo' }, { accessor: { user: { id: stubs.users.elephant1.id } } })
+      ]).toJSON();
+      expect(serializationResultPromise).to.be.a(BluebirdPromise);
+      serializationResultPromise.then(function(serializationResult) {
+        serializationResultPromise.then(function(serializationResult) {
+          expect(serializationResult).to.eql([{ username: 'foo' }]);
+          done();
+        });
+      });
+    });
+    it('should apply options passed to `toJSON` to the models in the collection', function(done) {
+      bookshelf.Collection.extend({ model: Comment }).forge([
+        Comment.forge({ id: 1, content: 'comment1' },
+          { accessor: { user: { id: stubs.users.elephant1.id } } })
+      ])
+      .toJSON({
+        contextSpecificVisibleFields: {
+          comments: [ 'content' ]
+        }
+      })
+      .then(function(result) {
+        expect(result).to.eql([
+          { content: 'comment1' }
+        ]);
 
+        done();
+      });
+    });
+    it('should serialize an empty model in a standalone collection as an empty object', function(done) {
+      // Not sure why anyone would care about this behavior, but good to document it.
+      bookshelf.Collection.extend({ model: Comment }).forge([
+        Comment.forge({}, { accessor: { user: { id: stubs.users.elephant1.id } } })
+      ]).toJSON().then(function(result) {
+        expect(result).to.eql([ {} ]);
+        done();
+      });
     });
   });
 });

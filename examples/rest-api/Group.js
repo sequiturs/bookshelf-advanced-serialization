@@ -60,7 +60,9 @@ module.exports = function(bookshelf) {
   }, {});
 
   // Register model
-  bookshelf.model('Group', Group);
+  if (!bookshelf.model('Group')) {
+    bookshelf.model('Group', Group);
+  }
 
   // Register model(s) depended on
   if (!bookshelf.model('User')) {

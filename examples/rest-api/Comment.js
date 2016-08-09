@@ -23,7 +23,9 @@ module.exports = function(bookshelf) {
   }, {});
 
   // Register model
-  bookshelf.model('Comment', Comment);
+  if (!bookshelf.model('Comment')) {
+    bookshelf.model('Comment', Comment);
+  }
 
   // Register model(s) depended on
   if (!bookshelf.model('User')) {
