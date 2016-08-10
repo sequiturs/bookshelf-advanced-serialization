@@ -80,9 +80,12 @@ module.exports = bookshelf;
 
 ### API
 
-See [docs site](https://sequiturs.github.io/bookshelf-advanced-serialization/module-bookshelf-advanced-serialization.html).
+See the [docs](https://sequiturs.com/developers/open-source/bookshelf-advanced-serialization/module-bookshelf-advanced-serialization.html).
 
-If you have cloned the repo, you can view the docs locally by opening `docs/index.html` in your browser.
+If you have cloned the repo, you can view a local copy of the docs:
+
+1. Generate the docs by running `npm run jsdoc`.
+2. Open `docs/index.html` in your browser.
 
 ### Examples
 
