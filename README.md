@@ -104,7 +104,7 @@ Within [`examples/rest-api/server.js`](https://github.com/sequiturs/bookshelf-ad
     - using custom arguments in the `contextDesignator` function
         - See route handling for `/comments/:id`.
     - using the default `relationChain` argument to `contextDesignator`
-        - TODO
+        - (No example of this.)
 - After ensuring certain relations have been loaded
     - using `contextDesignator`'s context designations with `ensureRelationsLoaded`
         - See route handling for `/comments/:id`.
@@ -113,7 +113,7 @@ Within [`examples/rest-api/server.js`](https://github.com/sequiturs/bookshelf-ad
     - using custom arguments in the `contextDesignator` function
         - See route handling for `/comments/:id`.
     - using the default `relationChain` argument to `contextDesignator`
-        - TODO
+        - (No example of this.)
 
 ## License
 
