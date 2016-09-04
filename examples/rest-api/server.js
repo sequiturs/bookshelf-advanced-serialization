@@ -45,7 +45,7 @@ app.get('/comments/:id', function(req, res) {
     .fetch()
     .then(function(comment) {
       return comment.toJSON({
-        contextSpecificVisibleFields: {
+        contextSpecificVisibleProperties: {
           comments: {
             requestedComment:       [ 'id', 'author', 'content', 'parent', 'children' ],
             requestedCommentParent: [ 'id', 'author' ],
@@ -60,7 +60,7 @@ app.get('/comments/:id', function(req, res) {
             requestedCommentChild:  [ 'author' ]
           }
         },
-        evaluator: function(tableName, relationChain, idOfModelBeingSerialized, parentIdOfModelBeingSerialized) {
+        contextDesignator: function(tableName, relationChain, idOfModelBeingSerialized, parentIdOfModelBeingSerialized) {
           if (tableName === 'comments') {
             if (comment.id === idOfModelBeingSerialized) {
               return 'requestedComment';

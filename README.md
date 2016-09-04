@@ -37,25 +37,25 @@ The serialization result returned by `toJSON` is determined by:
     - This is accomplished using three parts:
         - an `accessor` value set on a model instance,
         - a `roleDeterminer` method set on the model class, and
-        - a `rolesToVisibleFields` object set on the model class.
+        - a `rolesToVisibleProperties` object set on the model class.
 
-    - `accessor` represents who is accessing the model; this is the recipient of the serialization result. `roleDeterminer` is a function for determining the role of the `accessor` in relation to the model instance. When you call `toJSON`, `roleDeterminer` is invoked, with the `accessor` passed as an argument. `rolesToVisibleFields` is an object that maps a role to a list of properties that should be visible to someone with that role.
+    - `accessor` represents who is accessing the model; this is the recipient of the serialization result. `roleDeterminer` is a function for determining the role of the `accessor` in relation to the model instance. When you call `toJSON`, `roleDeterminer` is invoked, with the `accessor` passed as an argument. `rolesToVisibleProperties` is an object that maps a role to a list of properties that should be visible to someone with that role.
 
 2. optionally specifying the subset of these role-determined visible properties that should be in the serialization result given the application context in which serialization is being performed,
 
     - This is accomplished using two parts:
-        - a `contextSpecificVisibleFields` object provided on the `options` object passed to `toJSON`
-        - an optional `evaluator` function also provided on the `options` object
+        - a `contextSpecificVisibleProperties` object provided on the `options` object passed to `toJSON`
+        - an optional `contextDesignator` function also provided on the `options` object
 
-    - `contextSpecificVisibleFields` indexes lists of the properties of a model that should be visible in light of the application context. These lists are indexed first by models' `tableName`, which allows for easily specifying context-specific visible properties for all models of a certain type. (We use `tableName` because this is the only identifier Bookshelf provides for identifying a model's type.) If you want fine-grained control over designating context beyond simply by model type, you can provide an `evaluator` function, which is invoked when you call `toJSON`, and which by default is passed the model's `tableName`, `_accessedAsRelationChain`, and `id` properties as arguments. (You can override this default behavior and pass custom arguments to `evaluator`, by passing your own `getEvaluatorArguments` function when registering this plugin.) The designation returned by `evaluator` will be used to lookup the list of context-specific visible properties, inside `contextSpecificVisibleFields[tableName]`.
+    - `contextSpecificVisibleProperties` indexes lists of the properties of a model that should be visible in light of the application context. These lists are indexed first by models' `tableName`, which allows for easily specifying context-specific visible properties for all models of a certain type. (We use `tableName` because this is the only identifier Bookshelf provides for identifying a model's type.) If you want fine-grained control over designating context beyond simply by model type, you can provide an `contextDesignator` function, which is invoked when you call `toJSON`, and which by default is passed the model's `tableName`, `_accessedAsRelationChain`, and `id` properties as arguments. (You can override this default behavior and pass custom arguments to `contextDesignator`, by passing your own `getEvaluatorArguments` function when registering this plugin.) The designation returned by `contextDesignator` will be used to lookup the list of context-specific visible properties, inside `contextSpecificVisibleProperties[tableName]`.
 
 3. optionally loading specified relations on the model (or on the model's relations, recursively to any depth) before serializing, if those relations are not already loaded.
 
     - This is accomplished using two parts:
         - an `ensureRelationsLoaded` object provided on the `options` object passed to `toJSON`
-        - an optional `evaluator` function also provided on the `options` object. This is the same `evaluator` as in 2\.
+        - an optional `contextDesignator` function also provided on the `options` object. This is the same `contextDesignator` as in 2\.
 
-    - `ensureRelationsLoaded` works analogously to `contextSpecificVisibleFields`, except the lists contain the names of relations that it will be ensured are loaded on the model prior to serialization, rather than context-specific visible properties.
+    - `ensureRelationsLoaded` works analogously to `contextSpecificVisibleProperties`, except the lists contain the names of relations that it will be ensured are loaded on the model prior to serialization, rather than context-specific visible properties.
 
 ### Installation
 
@@ -97,22 +97,22 @@ Within [`examples/rest-api/server.js`](https://github.com/sequiturs/bookshelf-ad
 - Using access permissions but not application context
     - See route handling for `/users/:username`.
 - Using access permissions and application context
-    - using `evaluator`'s context designations with `contextSpecificVisibleFields`
+    - using `contextDesignator`'s context designations with `contextSpecificVisibleProperties`
         - See route handling for `/comments/:id`.
-    - using only table names, not `evaluator`'s context designations, with `contextSpecificVisibleFields`
+    - using only table names, not `contextDesignator`'s context designations, with `contextSpecificVisibleProperties`
         - See route handling for `/comments/:id`, specifically the `users` table name.
-    - using custom arguments in the `evaluator` function
+    - using custom arguments in the `contextDesignator` function
         - See route handling for `/comments/:id`.
-    - using the default `relationChain` argument to `evaluator`
+    - using the default `relationChain` argument to `contextDesignator`
         - TODO
 - After ensuring certain relations have been loaded
-    - using `evaluator`'s context designations with `ensureRelationsLoaded`
+    - using `contextDesignator`'s context designations with `ensureRelationsLoaded`
         - See route handling for `/comments/:id`.
-    - using only table names, not `evaluator`'s context designations, with `ensureRelationsLoaded`
+    - using only table names, not `contextDesignator`'s context designations, with `ensureRelationsLoaded`
         - See route handling for `/users/:username`.
-    - using custom arguments in the `evaluator` function
+    - using custom arguments in the `contextDesignator` function
         - See route handling for `/comments/:id`.
-    - using the default `relationChain` argument to `evaluator`
+    - using the default `relationChain` argument to `contextDesignator`
         - TODO
 
 ## License

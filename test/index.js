@@ -183,22 +183,22 @@ describe('Model', function() {
       });
     });
   });
-  describe('rolesToVisibleFields', function() {
+  describe('rolesToVisibleProperties', function() {
     var model = bookshelf.Model.extend({
       tableName: 'foo',
       roleDeterminer: function(accessor) {
         return 'bar';
       }
     }).forge();
-    it('should default to not setting a rolesToVisibleFields dictionary', function() {
-      expect(model.rolesToVisibleFields).to.equal(undefined);
+    it('should default to not setting a rolesToVisibleProperties dictionary', function() {
+      expect(model.rolesToVisibleProperties).to.equal(undefined);
     });
-    it('should fail to serialize a model lacking a rolesToVisibleFields dictionary', function() {
+    it('should fail to serialize a model lacking a rolesToVisibleProperties dictionary', function() {
       expect(function() {
         model.toJSON({});
       }).to.throwException(function(e) {
         expect(e).to.be.a(SanityError);
-        expect(e.message).to.equal('rolesToVisibleFields was not defined for models of table: foo');
+        expect(e.message).to.equal('rolesToVisibleProperties was not defined for models of table: foo');
       });
     });
   });
@@ -280,26 +280,26 @@ describe('Model', function() {
         done();
       });
     });
-    it('should reject a visibleFields that is not an array', function(done) {
+    it('should reject a visibleProperties that is not an array', function(done) {
       var model = bookshelf.Model.extend({
         tableName: 'foo',
         roleDeterminer: function() { return 'anyone'; },
-        rolesToVisibleFields: { anyone: { username: true } }
+        rolesToVisibleProperties: { anyone: { username: true } }
       }).forge({
         test: 123
       });
       var serializationResultPromise = model.toJSON().catch(function(e) {
         expect(e).to.be.a(SanityError);
-        expect(e.message).to.equal('rolesToVisibleFields for table foo ' +
-          'does not contain array of visible fields for role: anyone');
+        expect(e.message).to.equal('rolesToVisibleProperties for table foo ' +
+          'does not contain array of visible properties for role: anyone');
         done();
       });
     });
-    it('should resolve a model with no role visible fields as undefined', function(done) {
+    it('should resolve a model with no role visible properties as undefined', function(done) {
       var model = bookshelf.Model.extend({
         tableName: 'foo',
         roleDeterminer: function() { return 'anyone'; },
-        rolesToVisibleFields: { anyone: [] }
+        rolesToVisibleProperties: { anyone: [] }
       }).forge({
         test: 123
       });
@@ -308,7 +308,7 @@ describe('Model', function() {
         done();
       });
     });
-    it('should successfully serialize a model that uses role visible fields only', function(done) {
+    it('should successfully serialize a model that uses role visible properties only', function(done) {
       var model = User.forge(stubs.users.elephant1, {
         accessor: { user: { id: stubs.users.antelope99.id } }
       });
@@ -324,23 +324,23 @@ describe('Model', function() {
       });
     });
     describe('options', function() {
-      describe('evaluator', function() {
-        it('should require a truthy evaluator to be a function', function(done) {
+      describe('contextDesignator', function() {
+        it('should require a truthy contextDesignator to be a function', function(done) {
           User.forge({ username: 'foo' }, {
             accessor: { user: 'bar' }
           }).toJSON({
-            evaluator: 'fizz'
+            contextDesignator: 'fizz'
           }).catch(function(e) {
             expect(e).to.be.a(SanityError);
-            expect(e.message).to.equal('evaluator must be a function');
+            expect(e.message).to.equal('contextDesignator must be a function');
             done();
           });
         });
-        it('should invoke evaluator with tableName, _accessedAsRelationChain, and model id as default arguments', function(done) {
+        it('should invoke contextDesignator with tableName, _accessedAsRelationChain, and model id as default arguments', function(done) {
           User.forge({ id: 1, username: 'foo' }, {
             accessor: { user: 'bar' }
           }).toJSON({
-            evaluator: function(tableName, relationChain, id) {
+            contextDesignator: function(tableName, relationChain, id) {
               expect(tableName).to.equal('users');
               expect(relationChain).to.eql([]);
               expect(id).to.equal(1);
@@ -348,14 +348,14 @@ describe('Model', function() {
             }
           });
         });
-        it('the return result of evaluator methods should be wrapped in a promise, so evaluator can do async work if it wants to', function(done) {
+        it('the return result of contextDesignator methods should be wrapped in a promise, so contextDesignator can do async work if it wants to', function(done) {
           User.forge({ id: 1, username: 'foo' }, {
             accessor: { user: 'bar' }
           }).toJSON({
-            evaluator: function(tableName, relationChain, id) {
+            contextDesignator: function(tableName, relationChain, id) {
               return 'fizz';
             },
-            contextSpecificVisibleFields: {
+            contextSpecificVisibleProperties: {
               users: {
                 fizz: [ 'username' ]
               }
@@ -366,10 +366,10 @@ describe('Model', function() {
             User.forge({ id: 1, username: 'foo' }, {
               accessor: { user: 'bar' }
             }).toJSON({
-              evaluator: function(tableName, relationChain, id) {
+              contextDesignator: function(tableName, relationChain, id) {
                 return BluebirdPromise.resolve('fizz');
               },
-              contextSpecificVisibleFields: {
+              contextSpecificVisibleProperties: {
                 users: {
                   fizz: [ 'username' ]
                 }
@@ -381,7 +381,7 @@ describe('Model', function() {
             });
           });
         });
-        it('should support providing a custom function for generating the arguments passed to the evaluator function', function(done) {
+        it('should support providing a custom function for generating the arguments passed to the contextDesignator function', function(done) {
           var anotherBookshelf = require('bookshelf')(knex);
           anotherBookshelf.plugin('registry');
           anotherBookshelf.plugin(plugin({
@@ -393,7 +393,7 @@ describe('Model', function() {
           anotherBookshelf.Model.extend({
             tableName: 'tunes',
             roleDeterminer: function() { return 'anyone'; },
-            rolesToVisibleFields: {
+            rolesToVisibleProperties: {
               anyone: [ 'id' ]
             }
           }).forge({
@@ -403,7 +403,7 @@ describe('Model', function() {
           }, {
             accessor: { user: 'bar' }
           }).toJSON({
-            evaluator: function(tableName, albumName) {
+            contextDesignator: function(tableName, albumName) {
               expect(tableName).to.equal('tunes');
               expect(albumName).to.equal('John Wesley Harding');
               done();
@@ -413,9 +413,9 @@ describe('Model', function() {
       });
 
       // Share some sanity-checking test logic between ensureRelationsLoaded and
-      // contextSpecificVisibleFields.
+      // contextSpecificVisibleProperties.
       var sharedSanityChecking = function(property) {
-        if (!(property === 'ensureRelationsLoaded' || property === 'contextSpecificVisibleFields')) {
+        if (!(property === 'ensureRelationsLoaded' || property === 'contextSpecificVisibleProperties')) {
           throw new Error('Incorrect property passed to sharedSanityChecking');
         }
 
@@ -474,7 +474,7 @@ describe('Model', function() {
                 ensureRelationsLoaded: {
                   users: [ 'groupsMemberOf' ]
                 },
-                contextSpecificVisibleFields: {
+                contextSpecificVisibleProperties: {
                   groups: [ 'name' ]
                 }
               }).then(function(result) {
@@ -490,7 +490,7 @@ describe('Model', function() {
               });
             });
           });
-          it('should require an evaluator function if ' + property + '[tableName] is an object', function(done) {
+          it('should require an contextDesignator function if ' + property + '[tableName] is an object', function(done) {
             var options = {};
             options[property] = {
               users: { foo: [ 'groupsMemberOf' ] }
@@ -502,16 +502,16 @@ describe('Model', function() {
             .then(function(model) {
               model.toJSON(options).catch(function(e) {
                 expect(e).to.be.a(SanityError);
-                expect(e.message).to.equal('options must contain an evaluator function if ' +
+                expect(e.message).to.equal('options must contain an contextDesignator function if ' +
                   'options.' + property + '[this.tableName] is an object');
 
                 done();
               });
             });
           });
-          it('should support ' + property + '[tableName] being an object and use the designation returned by the evaluator function', function(done) {
+          it('should support ' + property + '[tableName] being an object and use the designation returned by the contextDesignator function', function(done) {
             var options = {
-              evaluator: function(tableName, relationChain, id) {
+              contextDesignator: function(tableName, relationChain, id) {
                 return 'foo';
               }
             };
@@ -519,10 +519,10 @@ describe('Model', function() {
               options[property] = {
                 users: { foo: [ 'groupsMemberOf' ] }
               };
-              options.contextSpecificVisibleFields = {
+              options.contextSpecificVisibleProperties = {
                 groups: [ 'name' ]
               };
-            } else if (property === 'contextSpecificVisibleFields') {
+            } else if (property === 'contextSpecificVisibleProperties') {
               options[property] = {
                 users: { foo: [ 'email' ] }
               };
@@ -542,7 +542,7 @@ describe('Model', function() {
                     groupsMemberOf: [{ name: 'Slouchy gauchos' }]
                   });
                   done();
-                } else if (property === 'contextSpecificVisibleFields') {
+                } else if (property === 'contextSpecificVisibleProperties') {
                   expect(result).to.eql({
                     email: 'elephant1@example.com'
                   });
@@ -553,7 +553,7 @@ describe('Model', function() {
           });
           it('should reject ' + property + '[tableName] being neither array nor object', function(done) {
             var options = {
-              evaluator: function(tableName, relationChain, id) {
+              contextDesignator: function(tableName, relationChain, id) {
                 return 'foo';
               }
             };
@@ -569,7 +569,7 @@ describe('Model', function() {
                 expect(e).to.be.a(SanityError);
                 expect(e.message).to.equal(property + '.users ' +
                   'must be an array, or an object whose keys are strings returned ' +
-                  'by the options.evaluator function and whose values are arrays.');
+                  'by the options.contextDesignator function and whose values are arrays.');
 
                 done();
               });
@@ -577,7 +577,7 @@ describe('Model', function() {
           });
           it('should require that ' + property + '[tableName][designation] be an array', function(done) {
             var options = {
-              evaluator: function(tableName, relationChain, id) {
+              contextDesignator: function(tableName, relationChain, id) {
                 return 'foo';
               }
             };
@@ -591,7 +591,7 @@ describe('Model', function() {
             .then(function(model) {
               model.toJSON(options).catch(function(e) {
                 expect(e).to.be.a(SanityError);
-                expect(e.message).to.equal('evaluator function did not successfully ' +
+                expect(e.message).to.equal('contextDesignator function did not successfully ' +
                   'identify array within ' + property);
 
                 done();
@@ -633,7 +633,7 @@ describe('Model', function() {
             anotherBookshelf.Model.extend({
               tableName: 'tunes',
               roleDeterminer: function() { return 'anyone'; },
-              rolesToVisibleFields: {
+              rolesToVisibleProperties: {
                 anyone: [ 'id', 'name', 'albumName', 'artistName', 'recordLabel' ]
               }
             }).forge({
@@ -687,7 +687,7 @@ describe('Model', function() {
                 ensureRelationsLoaded: {
                   users: [ 'groupsMemberOf' ]
                 },
-                contextSpecificVisibleFields: {
+                contextSpecificVisibleProperties: {
                   users: [ 'id', 'username' ]
                 }
               }).then(function(result) {
@@ -719,7 +719,7 @@ describe('Model', function() {
                 ensureRelationsLoaded: {
                   users: [ 'groupsMemberOf' ]
                 },
-                contextSpecificVisibleFields: {
+                contextSpecificVisibleProperties: {
                   users: [ 'id', 'username' ]
                 }
               }).then(function(result) {
@@ -750,7 +750,7 @@ describe('Model', function() {
                 ensureRelationsLoaded: {
                   users: [ 'groupsMemberOf' ]
                 },
-                contextSpecificVisibleFields: {
+                contextSpecificVisibleProperties: {
                   users: [ 'id', 'username' ]
                 }
               }).then(function(result) {
@@ -764,9 +764,9 @@ describe('Model', function() {
           });
         });
       });
-      describe('contextSpecificVisibleFields', function() {
+      describe('contextSpecificVisibleProperties', function() {
 
-        sharedSanityChecking('contextSpecificVisibleFields');
+        sharedSanityChecking('contextSpecificVisibleProperties');
 
         describe('Unique sanity-checking test logic', function() {
           var tracker = mockKnex.getTracker();
@@ -782,14 +782,14 @@ describe('Model', function() {
             done();
           });
 
-          it('should calculate visible fields as the intersection of the role visible fields and the context-specific visible fields', function(done) {
+          it('should calculate visible properties as the intersection of the role visible properties and the context-specific visible properties', function(done) {
             User.forge({ username: 'elephant1' }, {
               accessor: { user: { id: stubs.users.elephant1.id } }
             })
             .fetch()
             .then(function(model) {
               model.toJSON({
-                contextSpecificVisibleFields: {
+                contextSpecificVisibleProperties: {
                   users: [ 'created_at', 'email' ]
                 }
               }).then(function(result) {
@@ -801,14 +801,14 @@ describe('Model', function() {
               });
             });
           });
-          it('should resolve models with no ultimately visible fields as undefined', function(done) {
+          it('should resolve models with no ultimately visible properties as undefined', function(done) {
             User.forge({ username: 'elephant1' }, {
               accessor: { user: { id: stubs.users.elephant1.id } }
             })
             .fetch()
             .then(function(model) {
               model.toJSON({
-                contextSpecificVisibleFields: {
+                contextSpecificVisibleProperties: {
                   users: [ 'shapes', 'sizes' ]
                 }
               }).then(function(result) {
@@ -844,7 +844,7 @@ describe('Model', function() {
               ensureRelationsLoaded: {
                 users: [ 'groupsMemberOf' ]
               },
-              contextSpecificVisibleFields: {
+              contextSpecificVisibleProperties: {
                 users: [ 'id', 'username', 'groupsMemberOf' ]
               },
               shallow: true
@@ -870,7 +870,7 @@ describe('Model', function() {
           var teachersModelDefinition = {
             tableName: 'teachers',
             roleDeterminer: function() { return 'anyone'; },
-            rolesToVisibleFields: { anyone: [ 'id', 'name', 'classesTeacherOf' ] },
+            rolesToVisibleProperties: { anyone: [ 'id', 'name', 'classesTeacherOf' ] },
             classesTeacherOf: function() {
               return this.belongsToMany('Class', 'class_teachers', 'teacher_id', 'class_id')
             }
@@ -878,7 +878,7 @@ describe('Model', function() {
           var classesModelDefinition = {
             tableName: 'classes',
             roleDeterminer: function() { return 'anyone'; },
-            rolesToVisibleFields: { anyone: [ 'id', 'name', '_pivot_teacher_id', '_pivot_class_id' ] }
+            rolesToVisibleProperties: { anyone: [ 'id', 'name', '_pivot_teacher_id', '_pivot_class_id' ] }
           };
 
           var teacherFixture = {
@@ -988,7 +988,7 @@ describe('Model', function() {
         model.load('groupsMemberOf').then(function() {
           expect(model.relations.hasOwnProperty('groupsMemberOf')).to.equal(true);
           model.toJSON({
-            contextSpecificVisibleFields: {
+            contextSpecificVisibleProperties: {
               users: [ 'id', 'username', 'email', 'created_at' ]
             }
           }).then(function(result) {
@@ -1022,7 +1022,7 @@ describe('Model', function() {
           var groups = model.related('groupsMemberOf'); // Need to call this because
           // .related() is what transfers model._accessor to the relation
           model.toJSON({
-            contextSpecificVisibleFields: {
+            contextSpecificVisibleProperties: {
               groups: [ 'id', 'name' ]
             }
           }).then(function(result) {
@@ -1038,7 +1038,7 @@ describe('Model', function() {
             });
 
             model.toJSON({
-              contextSpecificVisibleFields: {
+              contextSpecificVisibleProperties: {
                 groups: []
               }
             }).then(function(result) {
@@ -1074,7 +1074,7 @@ describe('Model', function() {
           var groups = model.related('groupsMemberOf'); // Need to call this because
           // .related() is what transfers model._accessor to the relation
           model.toJSON({
-            contextSpecificVisibleFields: {
+            contextSpecificVisibleProperties: {
               groups: [ 'id', 'name' ]
             }
           }).then(function(result) {
@@ -1168,7 +1168,7 @@ describe('Model', function() {
       bookshelf.Model.extend({
         tableName: 'foo',
         roleDeterminer: function() { return 'anyone'; },
-        rolesToVisibleFields: { anyone: [ 'bar' ] }
+        rolesToVisibleProperties: { anyone: [ 'bar' ] }
       }).forge({}, { accessor:
         { user: { id: stubs.users.elephant1.id } }
       })
@@ -1199,7 +1199,7 @@ describe('Model', function() {
           }));
 
           user.toJSON({
-            contextSpecificVisibleFields: {
+            contextSpecificVisibleProperties: {
               groups: [ 'id', 'name' ]
             }
           }).then(function(result) {
@@ -1292,7 +1292,7 @@ describe('Collection', function() {
           { accessor: { user: { id: stubs.users.elephant1.id } } }),
       ])
       .toJSON({
-        evaluator: function(tableName, relationChain, id) {
+        contextDesignator: function(tableName, relationChain, id) {
           if (tableName === 'comments') {
             if (id === 1) {
               return 'foo';
@@ -1301,7 +1301,7 @@ describe('Collection', function() {
             }
           }
         },
-        contextSpecificVisibleFields: {
+        contextSpecificVisibleProperties: {
           comments: {
             foo: [ 'id', 'content' ],
             bar: []
@@ -1336,7 +1336,7 @@ describe('Collection', function() {
           { accessor: { user: { id: stubs.users.elephant1.id } } })
       ])
       .toJSON({
-        contextSpecificVisibleFields: {
+        contextSpecificVisibleProperties: {
           comments: [ 'content' ]
         }
       })

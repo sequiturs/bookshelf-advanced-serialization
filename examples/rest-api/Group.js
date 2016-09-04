@@ -45,7 +45,7 @@ module.exports = function(bookshelf) {
         return 'outsider';
       }
     },
-    rolesToVisibleFields: {
+    rolesToVisibleProperties: {
       admin:    [ 'id', 'name', 'admins', 'members', 'created_at' ],
       member:   [ 'id', 'name', 'admins', 'members' ],
       outsider: []

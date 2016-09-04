@@ -10,7 +10,7 @@ module.exports = function(bookshelf) {
         'theUserHerself' :
         'someoneElse';
     },
-    rolesToVisibleFields: {
+    rolesToVisibleProperties: {
       theUserHerself: [ 'id', 'username', 'created_at', 'email', 'groupsMemberOf', 'groupsAdminOf' ],
       someoneElse:    [ 'id', 'username', 'created_at' ]
       // User models might contain other attributes like hashed_password,

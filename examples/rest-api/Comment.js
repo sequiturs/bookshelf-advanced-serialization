@@ -7,7 +7,7 @@ module.exports = function(bookshelf) {
     roleDeterminer: function(accessor) {
       return 'anyone';
     },
-    rolesToVisibleFields: {
+    rolesToVisibleProperties: {
       anyone: [ 'id', 'author', 'content', 'parent', 'children' ]
     },
 
