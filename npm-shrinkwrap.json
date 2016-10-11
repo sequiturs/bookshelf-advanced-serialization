@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-advanced-serialization",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "dependencies": {
     "bluebird": {
       "version": "3.4.1",
@@ -8,9 +8,9 @@
       "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.4.1.tgz"
     },
     "bookshelf": {
-      "version": "0.10.1",
-      "from": "bookshelf@0.10.1",
-      "resolved": "https://registry.npmjs.org/bookshelf/-/bookshelf-0.10.1.tgz",
+      "version": "0.10.2",
+      "from": "bookshelf@0.10.2",
+      "resolved": "https://registry.npmjs.org/bookshelf/-/bookshelf-0.10.2.tgz",
       "dependencies": {
         "babel-runtime": {
           "version": "6.11.6",
@@ -30,9 +30,9 @@
           }
         },
         "bluebird": {
-          "version": "2.11.0",
-          "from": "bluebird@>=2.9.4 <3.0.0",
-          "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-2.11.0.tgz"
+          "version": "3.4.6",
+          "from": "bluebird@>=3.4.3 <4.0.0",
+          "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.4.6.tgz"
         },
         "chalk": {
           "version": "1.1.3",
