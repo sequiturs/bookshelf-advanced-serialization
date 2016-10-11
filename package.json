@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-advanced-serialization",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Plugin for Bookshelf.js supporting advanced serialization behavior, including by (1) model access permissions, (2) the application context in which serialization occurs, and (3) the relations that should be loaded on the model before serializing.",
   "main": "lib/index.js",
   "directories": {
@@ -26,7 +26,7 @@
   "homepage": "https://github.com/sequiturs/bookshelf-advanced-serialization#readme",
   "dependencies": {
     "bluebird": "3.4.1",
-    "bookshelf": "0.9.5",
+    "bookshelf": "0.10.0",
     "create-error": "0.3.1",
     "lodash": "3.10.1"
   },
