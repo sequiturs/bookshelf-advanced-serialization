@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-advanced-serialization",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "dependencies": {
     "bluebird": {
       "version": "3.4.1",
@@ -8,14 +8,14 @@
       "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.4.1.tgz"
     },
     "bookshelf": {
-      "version": "0.9.4",
-      "from": "bookshelf@0.9.4",
-      "resolved": "https://registry.npmjs.org/bookshelf/-/bookshelf-0.9.4.tgz",
+      "version": "0.9.5",
+      "from": "bookshelf@0.9.5",
+      "resolved": "https://registry.npmjs.org/bookshelf/-/bookshelf-0.9.5.tgz",
       "dependencies": {
         "bluebird": {
-          "version": "2.10.2",
+          "version": "2.11.0",
           "from": "bluebird@>=2.9.4 <3.0.0",
-          "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-2.10.2.tgz"
+          "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-2.11.0.tgz"
         },
         "babel-runtime": {
           "version": "6.11.6",
@@ -86,9 +86,9 @@
           "resolved": "https://registry.npmjs.org/inflection/-/inflection-1.10.0.tgz"
         },
         "inherits": {
-          "version": "2.0.1",
+          "version": "2.0.3",
           "from": "inherits@>=2.0.1 <2.1.0",
-          "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
+          "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.3.tgz"
         }
       }
     },
