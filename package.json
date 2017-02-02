@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/sequiturs/bookshelf-advanced-serialization#readme",
   "peerDependencies": {
-    "bookshelf": ">= 0.9.4 < 1"
+    "bookshelf": ">= 0.9.4 <= 0.10.3"
   },
   "dependencies": {
     "bluebird": "3.4.1",
@@ -33,7 +33,7 @@
     "lodash": "3.10.1"
   },
   "devDependencies": {
-    "bookshelf": "^0.10.2",
+    "bookshelf": "^0.10.3",
     "coveralls": "^2.11.12",
     "expect.js": "^0.3.1",
     "istanbul": "^0.4.4",
