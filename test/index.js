@@ -113,6 +113,7 @@ describe('Model', function() {
 
   var User = require('../examples/rest-api/User.js')(bookshelf);
   var Comment = require('../examples/rest-api/Comment.js')(bookshelf);
+  var Group = require('../examples/rest-api/Group.js')(bookshelf);
 
   var fetchElephant1LoadGroupsMemberOf = function(query) {
     return [
@@ -818,6 +819,128 @@ describe('Model', function() {
             });
           });
         })
+      });
+      describe('accessor', function() {
+        it('should use this option value as the accessor, when serializing', function(done) {
+          var model = User.forge(stubs.users.elephant1);
+          var serializationResultPromise =
+            model.toJSON({ accessor: { user: { id: stubs.users.elephant1.id } } })
+              .then(function(result) {
+                expect(result).to.eql({
+                  id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                  username: 'elephant1',
+                  email: 'elephant1@example.com',
+                  created_at: '2016-01-03T04:07:51.690Z'
+                });
+                done();
+              });
+        });
+        it('should give precedence to this option value over `model._accessor` set during instantiation, when serializing', function(done) {
+          var model = User.forge(stubs.users.elephant1, { accessor: { user: { id: stubs.users.elephant1.id } } });
+          expect(model._accessor).to.eql({ user: { id: stubs.users.elephant1.id } });
+          var serializationResultPromise =
+            model.toJSON({ accessor: { user: null } })
+              .then(function(result) {
+                expect(result).to.eql({
+                  id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                  username: 'elephant1',
+                  created_at: '2016-01-03T04:07:51.690Z'
+                });
+                done();
+              });
+        });
+        it('should give precedence to this option value over `model._accessor` set via `model.setAccessor()`, when serializing', function(done) {
+          var model = User.forge(stubs.users.elephant1);
+          model.setAccessor({ user: { id: stubs.users.elephant1.id } });
+          expect(model._accessor).to.eql({ user: { id: stubs.users.elephant1.id } });
+          var serializationResultPromise =
+            model.toJSON({ accessor: { user: null } })
+              .then(function(result) {
+                expect(result).to.eql({
+                  id: '3fe94198-7b32-44ee-abdd-04104b902c51',
+                  username: 'elephant1',
+                  created_at: '2016-01-03T04:07:51.690Z'
+                });
+                done();
+              });
+        });
+        it('should give precedence to this option value over `model._accessor` on a related model, when serializing', function(done) {
+          var tracker = mockKnex.getTracker();
+          tracker.install();
+          tracker.on('query', function sendResult(query, step) {
+            (
+              [
+                function() {
+                  // Fetch NPTES group
+                  query.response([ stubs.groups.NPTES ]);
+                },
+                function() {
+                  query.response([
+                    // Load group admins
+                    _.extend({}, stubs.users.antelope99, {
+                      _pivot_user_id: stubs.users.antelope99.id,
+                      _pivot_group_id: stubs.groups.NPTES.id
+                    })
+                  ]);
+                },
+                function() {
+                  // Load group members (as part of roleDeterminer)
+                  query.response([
+                    _.extend({}, stubs.users.ostrich14, {
+                      _pivot_user_id: stubs.users.ostrich14.id,
+                      _pivot_group_id: stubs.groups.NPTES.id
+                    })
+                  ]);
+                }
+              ]
+            )[step - 1]();
+          });
+
+          Group.forge({ id: 'b0a94a70-2db7-4063-ad0d-0ef39412bfd2' }, {
+            accessor: { user: { id: stubs.users.antelope99.id } }
+          })
+          .fetch()
+          .then(function(model) {
+            model.load('admins').then(function() {
+              var admins = model.related('admins');
+              admins.each(function(admin) {
+                expect(admin._accessor).to.eql({ user: { id: stubs.users.antelope99.id } });
+              });
+              model.toJSON({
+                ensureRelationsLoaded: {
+                  groups: ['admins']
+                },
+                accessor: { user: { id: stubs.users.ostrich14.id } }
+              }).then(function(result) {
+                expect(result).to.eql({
+                  id: 'b0a94a70-2db7-4063-ad0d-0ef39412bfd2',
+                  name: 'Neo-Post-Tangential Economics Society',
+                  admins: [{
+                    id: '3d33e941-e23e-41fa-8807-03e87ce7baa8',
+                    username: 'antelope99',
+                    created_at: '2016-02-03T04:07:51.690Z'
+                    // We don't expect antelope99's email address, because
+                    // only antelope99 herself may see her email address, but we
+                    // expect the accessor taking precedence to be the ostrich14 user.
+                  }],
+                  members: [{
+                    id: '140fb3a9-f688-4852-b917-5287c228f45f',
+                    username: 'ostrich14',
+                    email: 'ostrich14@example.com',
+                    created_at: '2016-03-03T04:07:51.690Z'
+                    // Conversely, we expect ostrich14's email address, because
+                    // we expect the accessor taking precedence to be ostrich14, whereas
+                    // we wouldn't expect the email address if the accessor taking
+                    // precedence were antelop99.
+                  }]
+                });
+
+                tracker.uninstall();
+                done();
+              });
+            });
+          });
+        });
       });
       describe('shallow', function() {
         var tracker = mockKnex.getTracker();

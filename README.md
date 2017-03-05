@@ -35,7 +35,7 @@ The serialization result returned by `toJSON` is determined by:
 1. evaluating the access permissions of the recipient to determine the maximum extent of the recipient's visibility into a model,
 
     - This is accomplished using three parts:
-        - an `accessor` value set on a model instance,
+        - an `accessor` value that is passed as an option to `toJSON()` or that has been set on a model instance,
         - a `roleDeterminer` method set on the model class, and
         - a `rolesToVisibleProperties` object set on the model class.
 
