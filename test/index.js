@@ -103,7 +103,7 @@ describe('Plugin', function() {
         });
       });
     });
-    describe('options.defaultModelOmitNew', function() {
+    describe('options.defaultOmitNew', function() {
       it('should accept not passing the option', function() {
         expect(function() {
           plugin({});
@@ -111,27 +111,27 @@ describe('Plugin', function() {
       });
       it('should accept passing `true`', function() {
         expect(function() {
-          plugin({ defaultModelOmitNew: true });
+          plugin({ defaultOmitNew: true });
         }).to.not.throwException();
       });
       it('should accept passing `false`', function() {
         expect(function() {
-          plugin({ defaultModelOmitNew: false });
+          plugin({ defaultOmitNew: false });
         }).to.not.throwException();
       });
       it('should reject a value that is not a boolean', function() {
         expect(function() {
-          plugin({ defaultModelOmitNew: 'true' });
+          plugin({ defaultOmitNew: 'true' });
         }).to.throwException(function(e) {
           expect(e).to.be.a(SanityError);
-          expect(e.message).to.equal('defaultModelOmitNew passed as plugin option must be a boolean.');
+          expect(e.message).to.equal('defaultOmitNew passed as plugin option must be a boolean.');
         });
       });
       it('should be respected in call to `model.toJSON()` when `omitNew` option is not specified', function(done) {
         var anotherBookshelf = require('bookshelf')(knex);
         anotherBookshelf.plugin('registry');
         anotherBookshelf.plugin(plugin({
-          defaultModelOmitNew: true
+          defaultOmitNew: true
         }));
 
         var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
@@ -148,7 +148,7 @@ describe('Plugin', function() {
         var anotherBookshelf = require('bookshelf')(knex);
         anotherBookshelf.plugin('registry');
         anotherBookshelf.plugin(plugin({
-          defaultModelOmitNew: true
+          defaultOmitNew: true
         }));
 
         var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
@@ -161,8 +161,43 @@ describe('Plugin', function() {
         })
         .asCallback(done);
       });
-      it.skip('should not affect value of `omitNew` option for `collection.toJSON()`', function() {
-        // TODO
+      it('should be respected in call to `collection.toJSON()` when `omitNew` option is not specified', function(done) {
+        var anotherBookshelf = require('bookshelf')(knex);
+        anotherBookshelf.plugin('registry');
+        anotherBookshelf.plugin(plugin({
+          defaultOmitNew: true
+        }));
+
+        var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
+        bookshelf.Collection.extend({ model: AnotherBookshelfUser }).forge([
+          AnotherBookshelfUser.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+        ])
+        .toJSON()
+        .then(function(json) {
+          expect(json).to.eql([]);
+        })
+        .asCallback(done);
+      });
+      it('should not be respected in call to `collection.toJSON()` when `omitNew` option is specified', function(done) {
+        var anotherBookshelf = require('bookshelf')(knex);
+        anotherBookshelf.plugin('registry');
+        anotherBookshelf.plugin(plugin({
+          defaultOmitNew: true
+        }));
+
+        var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
+        bookshelf.Collection.extend({ model: AnotherBookshelfUser }).forge([
+          AnotherBookshelfUser.forge({ username: 'elephant1' }, {
+            accessor: { user: { id: stubs.users.elephant1.id } }
+          })
+        ])
+        .toJSON({ omitNew: false })
+        .then(function(json) {
+          expect(json).to.eql([{ username: 'elephant1' }]);
+        })
+        .asCallback(done);
       });
     });
   });
@@ -1559,11 +1594,6 @@ describe('Collection', function() {
 
         done();
       });
-    });
-    it.skip('should replicate standard Collection behavior for `omitNew=true` option, removing models that are new from the collection', function() {
-      // TODO This would be more important if we actually try to hardcode replication
-      // of the standard Bookshelf behavior for `omitNew` and collections into this plugin.
-      // As it is, there should be nothing affecting the standard behavior.
     });
     it('should serialize an empty model in a standalone collection as an empty object', function(done) {
       // Not sure why anyone would care about this behavior, but good to document it.
