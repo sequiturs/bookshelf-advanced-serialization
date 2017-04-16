@@ -1563,6 +1563,7 @@ describe('Collection', function() {
     it.skip('should replicate standard Collection behavior for `omitNew=true` option, removing models that are new from the collection', function() {
       // TODO This would be more important if we actually try to hardcode replication
       // of the standard Bookshelf behavior for `omitNew` and collections into this plugin.
+      // As it is, there should be nothing affecting the standard behavior.
     });
     it('should serialize an empty model in a standalone collection as an empty object', function(done) {
       // Not sure why anyone would care about this behavior, but good to document it.
