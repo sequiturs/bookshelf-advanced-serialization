@@ -103,6 +103,68 @@ describe('Plugin', function() {
         });
       });
     });
+    describe('options.defaultModelOmitNew', function() {
+      it('should accept not passing the option', function() {
+        expect(function() {
+          plugin({});
+        }).to.not.throwException();
+      });
+      it('should accept passing `true`', function() {
+        expect(function() {
+          plugin({ defaultModelOmitNew: true });
+        }).to.not.throwException();
+      });
+      it('should accept passing `false`', function() {
+        expect(function() {
+          plugin({ defaultModelOmitNew: false });
+        }).to.not.throwException();
+      });
+      it('should reject a value that is not a boolean', function() {
+        expect(function() {
+          plugin({ defaultModelOmitNew: 'true' });
+        }).to.throwException(function(e) {
+          expect(e).to.be.a(SanityError);
+          expect(e.message).to.equal('defaultModelOmitNew passed as plugin option must be a boolean.');
+        });
+      });
+      it('should be respected in call to `model.toJSON()` when `omitNew` option is not specified', function(done) {
+        var anotherBookshelf = require('bookshelf')(knex);
+        anotherBookshelf.plugin('registry');
+        anotherBookshelf.plugin(plugin({
+          defaultModelOmitNew: true
+        }));
+
+        var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
+        AnotherBookshelfUser.forge({ username: 'elephant1' }, {
+          accessor: { user: { id: stubs.users.elephant1.id } }
+        })
+        .toJSON()
+        .then(function(json) {
+          expect(json).to.equal(null);
+        })
+        .asCallback(done);
+      });
+      it('should not be respected in call to `model.toJSON()` when `omitNew` option is specified', function(done) {
+        var anotherBookshelf = require('bookshelf')(knex);
+        anotherBookshelf.plugin('registry');
+        anotherBookshelf.plugin(plugin({
+          defaultModelOmitNew: true
+        }));
+
+        var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
+        AnotherBookshelfUser.forge({ username: 'elephant1' }, {
+          accessor: { user: { id: stubs.users.elephant1.id } }
+        })
+        .toJSON({ omitNew: false })
+        .then(function(json) {
+          expect(json).to.eql({ username: 'elephant1' });
+        })
+        .asCallback(done);
+      });
+      it.skip('should not affect value of `omitNew` option for `collection.toJSON()`', function() {
+        // TODO
+      });
+    });
   });
 });
 
@@ -1095,6 +1157,32 @@ describe('Model', function() {
           });
         });
       });
+      describe('omitNew', function() {
+        it('should respect `omitNew: true`', function(done) {
+          User.forge({ username: 'elephant1' }, { accessor: { user: { id: stubs.users.elephant1.id } } })
+            .toJSON({ omitNew: true })
+            .then(function(json) {
+              expect(json).to.equal(null);
+            })
+            .asCallback(done);
+        });
+        it('should respect `omitNew: false`', function(done) {
+          User.forge({ username: 'elephant1' }, { accessor: { user: { id: stubs.users.elephant1.id } } })
+            .toJSON({ omitNew: false })
+            .then(function(json) {
+              expect(json).to.eql({ username: 'elephant1' });
+            })
+            .asCallback(done);
+        });
+        it('should default to `omitNew: false`', function(done) {
+          User.forge({ username: 'elephant1' }, { accessor: { user: { id: stubs.users.elephant1.id } } })
+            .toJSON()
+            .then(function(json) {
+              expect(json).to.eql({ username: 'elephant1' });
+            })
+            .asCallback(done);
+        });
+      });
     });
     it('should remove relations from the model that do not need to be serialized, which can be important to prevent infinite looping', function(done) {
       var tracker = mockKnex.getTracker();
@@ -1459,6 +1547,7 @@ describe('Collection', function() {
           { accessor: { user: { id: stubs.users.elephant1.id } } })
       ])
       .toJSON({
+        // TODO Could strengthen this by including `contextDesignator` and `ensureRelationsLoaded`.
         contextSpecificVisibleProperties: {
           comments: [ 'content' ]
         }
@@ -1470,6 +1559,10 @@ describe('Collection', function() {
 
         done();
       });
+    });
+    it.skip('should replicate standard Collection behavior for `omitNew=true` option, removing models that are new from the collection', function() {
+      // TODO This would be more important if we actually try to hardcode replication
+      // of the standard Bookshelf behavior for `omitNew` and collections into this plugin.
     });
     it('should serialize an empty model in a standalone collection as an empty object', function(done) {
       // Not sure why anyone would care about this behavior, but good to document it.
