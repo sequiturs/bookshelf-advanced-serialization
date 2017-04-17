@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-advanced-serialization",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "dependencies": {
     "bluebird": {
       "version": "3.4.1",
