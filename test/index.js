@@ -169,14 +169,14 @@ describe('Plugin', function() {
         }));
 
         var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
-        bookshelf.Collection.extend({ model: AnotherBookshelfUser }).forge([
+        anotherBookshelf.Collection.extend({ model: AnotherBookshelfUser }).forge([
           AnotherBookshelfUser.forge({ username: 'elephant1' }, {
             accessor: { user: { id: stubs.users.elephant1.id } }
           })
         ])
         .toJSON()
         .then(function(json) {
-          expect(json).to.eql([]);
+          expect(json).to.eql([ null ]);
         })
         .asCallback(done);
       });
@@ -188,7 +188,7 @@ describe('Plugin', function() {
         }));
 
         var AnotherBookshelfUser = require('../examples/rest-api/User.js')(anotherBookshelf);
-        bookshelf.Collection.extend({ model: AnotherBookshelfUser }).forge([
+        anotherBookshelf.Collection.extend({ model: AnotherBookshelfUser }).forge([
           AnotherBookshelfUser.forge({ username: 'elephant1' }, {
             accessor: { user: { id: stubs.users.elephant1.id } }
           })
