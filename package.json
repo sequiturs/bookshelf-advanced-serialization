@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-advanced-serialization",
-  "version": "1.5.0rc",
+  "version": "1.5.0",
   "description": "Plugin for Bookshelf.js supporting advanced serialization behavior, including by (1) model access permissions, (2) the application context in which serialization occurs, and (3) the relations that should be loaded on the model before serializing.",
   "main": "lib/index.js",
   "directories": {
